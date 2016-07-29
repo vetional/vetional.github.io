@@ -14,10 +14,14 @@ keywords: "deep learning, tts, LSTM, HMM, tensorflow, android"
 **Architecture**
 
 ####Duration model
+
 **Input Features**
 
+Phoneme-level linguistic features?  
+
 **Output Features**
-How to compute the phoneme level duratons
+
+How to compute the phoneme level duratons?
 
 
 ####Acoustic model
