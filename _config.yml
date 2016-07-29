@@ -10,7 +10,7 @@ baseurl: null # apply null if repo name is something like username.github.io
 
 google_analytics: UA-81619227-1
 repo: http://github.com/vetional/vetional.github.io
-disqus_shortname: "vetional"
+disqus_shortname: "vetional-github-io"
 twitter_username: "vetional"
 comments: true
 
