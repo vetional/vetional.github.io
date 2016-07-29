@@ -2,8 +2,8 @@
 # SEO settings
 title: "Think learn "
 title2: "code" # default: ""
-description: "Just another minimalist Jekyll theme that focuses on technical writing."
-keywords: "Jekyll, theme, free, download, SEO, blog, web, minimalist, thinkspace"
+description: " A blog that focuses on technical writing on topics related to ML, Deep-learning and Computer Graphics"
+keywords: "python, ml, deep learning, linux, gpu, openGL, cuda"
 url: http://vetional.github.io/ # site url
 #baseurl: "/vetional.github.io" # apply repo name if use it under gh-pages branch
 baseurl: null # apply null if repo name is something like username.github.io
@@ -37,8 +37,8 @@ author:
   url      : http://vetional.github.io
   github   : http://github.com/vetional
   twitter  : http://twitter.com/vetional
-  facebook : https://www.facebook.com/profile.php?id=111
-  linkedin : http://linkedin.com/in/nrird
+  facebook : https://www.facebook.com/prateek.iitm
+  linkedin : http://www.linkedin.com/in/prateek-shrivastava
 
 # social settings
 og_locale: "en_US"
