@@ -4,7 +4,7 @@ title: About
 permalink: /about/
 ---
 
-I work on Text To Speech **(TTS)** systems for Indic languages on Android devices running Indus OS. Language parsers and synthesis module are built on Android NDK in C. As of now the TTS engine can synthesize text in Hindi, Tamil, Telugu, Malayalam, Bengali and Marathi to audio. I also work on the **ML and Deep models** related to analytics, to provide better understanding of our userbase at IndusOS. 
+I work on Text To Speech **(TTS)** systems for Indic languages on Android devices running Indus OS. Language parsers and synthesis module are built on Android NDK in C. As of now the TTS engine can synthesize text in Hindi, Tamil, Telugu, Malayalam, Bengali and Marathi to audio. I also work on the **ML and Deep models** related to analytics, to better understand our userbase at IndusOS. 
 
 I have worked as a full stack developer **(LAMP, MEAN)** in the past. When I like to work on data science and computer graphics projects from time to time.
 
