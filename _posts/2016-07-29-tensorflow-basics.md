@@ -7,7 +7,9 @@ keywords: "basics of tensorflow, serving, distributed"
 ---
 
 ```
-**Disclaimer: Most of the writeup may match verbatim to the tensorflow docs, infact the idea of this article is to takeout the most relevant parts of the tensorflow doc and present them in a simple manner.**
+**Disclaimer:** Most of the writeup may match verbatim to the tensorflow docs, 
+infact the idea of this article is to takeout the most relevant parts of 
+the tensorflow doc and present them in a simple manner.
 ```
 
 #### **Think: Serving tensorflow on android apps a broad overview**
