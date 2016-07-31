@@ -9,11 +9,11 @@ keywords: "basics of tensorflow, serving, distributed"
 **Disclaimer: Most of the writeup may match verbatim to the tensorflow docs, infact the idea of this article is to takeout the most relevant parts of the tensorflow doc and present them in a simple manner.**
 
 
-####Think: Serving tensorflow on android apps a broad overview**
+#### Think: Serving tensorflow on android apps a broad overview**
 
 A unified environment to model and distribute your learned models on Andorid.
 
-####Learn: Basics of tensorflow 
+#### Learn: Basics of tensorflow 
 
 Setting up tensorflow from [source](https://gist.github.com/vetional/3f75fa1a0a3923912d7b58819abef29f)
 
@@ -49,4 +49,4 @@ So instead of showing you the code for it let's first see a visualization for li
 
 **Limitations**
 
-####Code
+#### Code

@@ -6,16 +6,16 @@ description: "Use of deep learning techniques to replace the traditional HMM bas
 keywords: "deep learning, tts, LSTM, HMM, tensorflow, android"
 ---
 
-###Think : Serving tensorflow based LSTM model on android for TTS application
+### Think : Serving tensorflow based LSTM model on android for TTS application
 
 
-###Learn: Basics of LSTM 
+### Learn: Basics of LSTM 
 
 **Architecture**
 
-####Duration model
+#### Duration model
 
-####Input Features
+#### Input Features
 
 Phoneme-level linguistic features?  
 
@@ -76,12 +76,12 @@ The out- put features were basically the same as those used in the HMM- based sy
 How to compute the phoneme level duratons?
 
 
-####Acoustic model
-####Input Features
+### Acoustic model
+#### Input Features
 
-####Output Features
+#### Output Features
 
-###Code: 
+### Code: 
 **Tensorflow graphs for modeling LSTM**
 
 **Serve models to consumers**

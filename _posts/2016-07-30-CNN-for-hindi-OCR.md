@@ -6,26 +6,26 @@ description: "Use of deep learning techniques to recognize printed characters in
 keywords: "deep learning, OCR, Convolutional Neural network CNN, tensorflow, android"
 ---
 
-###Think : Serving tensorflow based CNN model on android for recognizing printed characters in indic languages
+### Think : Serving tensorflow based CNN model on android for recognizing printed characters in indic languages
 
 
-###Learn: Basics of CNN 
+### Learn: Basics of CNN 
 
 **Architecture**
 
-####Detection model
+#### Detection model
 **Input Features**
 
 **Output Features**
 How to compute the phoneme level duratons?
 
 
-####Correction model
+#### Correction model
 **Input Features**
 
 **Output Features**
 
-###Code: 
+### Code: 
 **Tensorflow graphs for modeling CNN**
 
 **Serve models to consumers**
