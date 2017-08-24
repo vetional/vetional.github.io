@@ -6,7 +6,7 @@ description: "using custom aggregate fucntions with pandas apply"
 keywords: "pandas apply aggregate"
 ---
 
-### Groupby
+### Groupby with custom aggregation function
 
 ```python
 
@@ -19,6 +19,7 @@ raw_data = {'regiment': ['Nighthawks', 'Nighthawks', 'Nighthawks', 'Nighthawks',
 df = pd.DataFrame(raw_data, columns = ['regiment', 'company', 'name', 'preTestScore', 'postTestScore'])
 df
 ```
+
 Let's do a groupby on regiment and see how many people in each regiment have similar names.
 
 ```python
