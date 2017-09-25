@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Securing containerized Mongo DB"
+title: "Securing containerized MongoDB"
 comments: true
 description: "How to quickly deploy a mongo container and avoid paying ransom"
 keywords: "docker mongodb ransomfree"
