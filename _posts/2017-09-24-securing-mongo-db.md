@@ -6,7 +6,7 @@ description: "How to quickly deploy a mongo container and avoid paying ransom"
 keywords: "docker mongodb ransomfree"
 ---
 
-### Getting the Docker container
+**Getting the Docker container**
 
 ```bash
 
