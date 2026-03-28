@@ -12,9 +12,17 @@ Previously at **Indus OS**, built Text-to-Speech systems for 6 Indic languages (
 
 ## Publications
 
-- P. Shrivastava, S. Das, et al. "[GPU Based Particle Coding Scheme for Virtual Cutting of Meshfree Particle Systems](https://link.springer.com/chapter/10.1007/978-3-319-12307-3_61)", Springer International Publishing, 2014.
+- P. Shrivastava, S. Das. "[GPU Based Particle Coding Scheme for Virtual Cutting of Meshfree Particle Systems](https://link.springer.com/chapter/10.1007/978-3-319-12307-3_61)", International Symposium on Visual Computing, Springer, 2014.
 
-- P. Shrivastava, S. Das. "[Real-time Simulation of Deformable Soft Bodies using SPH on GPU](https://www.researchgate.net/profile/Prateek-Shrivastava-5)", M.S. Thesis, IIT Madras, 2015.
+- P. Shrivastava, S. Das. "[Particle Coding for Meshfree Cutting of Deformable Assets](https://scholar.google.com/citations?view_op=view_citation&hl=en&user=lTh6jBcAAAAJ&citation_for_view=lTh6jBcAAAAJ:9yKSN-GCB0IC)", Proceedings of the Indian Conference on Computer Vision Graphics and Image Processing (ICVGIP), 2014.
+
+- P. Shrivastava, S. Das. "[Physics Based Virtual Cutting Using J-Integral Method for Gaming Applications](https://scholar.google.com/citations?view_op=view_citation&hl=en&user=lTh6jBcAAAAJ&citation_for_view=lTh6jBcAAAAJ:d1gkVwhDpl0C)", Proceedings of the 7th International Conference on Motion in Games (MIG), 2014.
+
+- P. Shrivastava, S. Das. "[Fast Area of Contact Computation for Collision Detection of a Deformable Object Using FEM](https://scholar.google.com/citations?view_op=view_citation&hl=en&user=lTh6jBcAAAAJ&citation_for_view=lTh6jBcAAAAJ:u5HHmVD_uO8C)", National Conference on Computer Vision, Pattern Recognition, Image Processing and Graphics (NCVPRIPG), 2013.
+
+- A. Shrivastava, P. Shrivastava, S. Das, S. Samanta. "[Stable Biped Locomotion Using Improved Proportional Derivative Controller](https://scholar.google.com/citations?view_op=view_citation&hl=en&user=lTh6jBcAAAAJ&citation_for_view=lTh6jBcAAAAJ:u-x6o8ySG0sC)", NCVPRIPG, 2013.
+
+[Google Scholar](https://scholar.google.com/citations?user=lTh6jBcAAAAJ&hl=en)
 
 ## Interests
 
