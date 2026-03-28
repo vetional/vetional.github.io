@@ -26,7 +26,7 @@ A good example is [FLUX.2 klein 4B](https://huggingface.co/black-forest-labs/FLU
 
 **Training cost:** Multiple rounds, each requiring a dataset + GPU hours. But you pay once; the distilled model serves forever.
 
-<div class="anim-embed"><step-distillation></step-distillation></div>
+<div class="anim-scroll"><div class="anim-embed"><step-distillation></step-distillation></div></div>
 
 **Pitfalls:**
 - Each halving round accumulates error, so quality degrades progressively
@@ -39,7 +39,7 @@ A good example is [FLUX.2 klein 4B](https://huggingface.co/black-forest-labs/FLU
 
 **Why 2 passes exist:** CFG subtracts the unconditional output from the conditional output to isolate the prompt's contribution, then amplifies it 7×. Both passes take the *current* noisy image as input, so neither can be precomputed.
 
-<div class="anim-embed"><diffusion-accel scene="cfg-parallel"></diffusion-accel></div>
+<div class="anim-scroll"><div class="anim-embed"><diffusion-accel scene="cfg-parallel"></diffusion-accel></div></div>
 
 **Why it works:** The student learns to directly predict the amplified result, conditioned on the guidance scale. One forward pass replaces two.
 
@@ -63,7 +63,7 @@ A good example is [FLUX.2 klein 4B](https://huggingface.co/black-forest-labs/FLU
 
 If retraining isn't an option, **caching** skips transformer passes at runtime by detecting when consecutive steps produce nearly identical outputs. Zero training cost, ~2× speedup.
 
-<div class="anim-embed"><diffusion-accel scene="teacache"></diffusion-accel></div>
+<div class="anim-scroll"><div class="anim-embed"><diffusion-accel scene="teacache"></diffusion-accel></div></div>
 
 Caching is orthogonal to distillation. You can stack all three.
 
