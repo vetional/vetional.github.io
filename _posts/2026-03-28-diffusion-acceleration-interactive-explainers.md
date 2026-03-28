@@ -67,3 +67,11 @@ The animation below shows how GPU memory is split between model weights, activat
 <a href="/learning-animations/diffusion-accel.html" style="display:inline-block;padding:12px 24px;background:#2ecc71;color:#fff;border-radius:6px;text-decoration:none;font-weight:bold;margin:16px 0;">▶ Launch all 12 Interactive Explainers</a>
 
 Also available: [P90 Latency](/learning-animations/p90.html) · [Step Distillation](/learning-animations/distillation.html) · [Guidance Distillation](/learning-animations/guidance.html) · [GPU Parallelism](/learning-animations/parallelism.html)
+
+## References
+
+1. Black Forest Labs. "[FLUX.2: Frontier Visual Intelligence](https://github.com/black-forest-labs/flux2)", 2025.
+2. Black Forest Labs. "[FLUX.2 klein 4B](https://huggingface.co/black-forest-labs/FLUX.2-klein-4B)", 2025.
+3. Austin et al. "[How to Think About GPUs](https://jax-ml.github.io/scaling-book/gpus/)", Google DeepMind, 2025.
+4. Dieleman. "[The paradox of diffusion distillation](https://sander.ai/2024/02/28/paradox.html)", 2024.
+5. vLLM-Omni. "[Diffusion Acceleration](https://docs.vllm.ai/projects/vllm-omni/en/latest/user_guide/diffusion_acceleration/)", 2025.

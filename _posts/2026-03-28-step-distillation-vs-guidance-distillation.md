@@ -74,3 +74,4 @@ Caching is orthogonal to distillation. You can stack all three.
 3. Ho, Salimans. "[Classifier-Free Diffusion Guidance](https://arxiv.org/abs/2207.12598)", NeurIPS 2021.
 4. Dieleman. "[The paradox of diffusion distillation](https://sander.ai/2024/02/28/paradox.html)", 2024.
 5. Sauer et al. "[Adversarial Diffusion Distillation](https://arxiv.org/abs/2311.17042)", 2023.
+6. Black Forest Labs. "[FLUX.2: Frontier Visual Intelligence](https://github.com/black-forest-labs/flux2)", 2025.

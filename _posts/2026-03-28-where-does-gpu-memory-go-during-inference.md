@@ -102,3 +102,5 @@ The ratio of compute to bandwidth is the **arithmetic intensity**. On an H100, y
 1. Black Forest Labs. "[FLUX.2 klein 4B](https://huggingface.co/black-forest-labs/FLUX.2-klein-4B)", 2025.
 2. Austin et al. "[How to Think About GPUs](https://jax-ml.github.io/scaling-book/gpus/)", Google DeepMind, 2025.
 3. NVIDIA. "[H100 Tensor Core GPU](https://www.nvidia.com/en-us/data-center/h100/)", 2023.
+4. Black Forest Labs. "[FLUX.2 klein KV Cache](https://github.com/black-forest-labs/flux2/blob/main/docs/flux2_klein_kv_cache.md)", 2025.
+5. Black Forest Labs. "[FLUX.2: Frontier Visual Intelligence](https://github.com/black-forest-labs/flux2)", 2025.
