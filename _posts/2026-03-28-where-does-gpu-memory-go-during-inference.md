@@ -2,23 +2,23 @@
 layout: post
 title: "Where Does GPU Memory Actually Go During Inference?"
 comments: true
-description: "A concrete breakdown of GPU memory during diffusion model inference — using FLUX.2 klein 4B as a worked example."
+description: "A concrete breakdown of GPU memory during diffusion model inference, using FLUX.2 klein 4B as a worked example."
 keywords: "GPU memory VRAM HBM inference diffusion model FLUX weights activations KV cache VAE quantization"
 ---
 
 {% include animations.html %}
 
-You load a 4B parameter diffusion model. The card says "~13GB VRAM." You have a 24GB GPU. That leaves 11GB free — plenty, right?
+You load a 4B parameter diffusion model. The card says "~13GB VRAM." You have a 24GB GPU. That leaves 11GB free. Plenty, right?
 
 Then you try generating a 2048×2048 image and get an OOM error. Where did all the memory go?
 
 ## What Is "GPU Memory"?
 
-A GPU isn't one pool of memory — it's a hierarchy with very different sizes and speeds.
+A GPU isn't one pool of memory. It's a hierarchy with very different sizes and speeds.
 
 | Memory | Size (H100) | Bandwidth | Role |
 |--------|-------------|-----------|------|
-| **HBM** | 80 GB | 3.35 TB/s | Weights, activations, KV cache — everything |
+| **HBM** | 80 GB | 3.35 TB/s | Weights, activations, KV cache, everything |
 | **L2 Cache** | 50 MB | ~5.5 TB/s | Recently accessed data (hardware-managed) |
 | **SMEM** (per SM) | 256 KB | ~30 TB/s | Data actively being computed on |
 | **Registers** (per SM) | 256 KB | Instant | Values mid-computation |
@@ -29,31 +29,31 @@ A GPU isn't one pool of memory — it's a hierarchy with very different sizes an
 
 ## The Five Components: FLUX.2 klein 4B
 
-Using [FLUX.2 klein 4B](https://huggingface.co/black-forest-labs/FLUX.2-klein-4B) — a 4B parameter rectified flow transformer, 4 inference steps, model card says ~13GB VRAM.
+Using [FLUX.2 klein 4B](https://huggingface.co/black-forest-labs/FLUX.2-klein-4B) . A 4B parameter rectified flow transformer, 4 inference steps, model card says ~13GB VRAM.
 
-### 1. Model Weights (~8 GB) — Fixed
+### 1. Model Weights (~8 GB), Fixed
 
 4B params × 2 bytes (BF16) = 8 GB. Always in memory regardless of resolution or batch size. Includes the DiT transformer, text encoder, and VAE decoder.
 
 **With FP8:** drops to ~4 GB. This is the single biggest win for memory-constrained deployment.
 
-### 2. Activations (~2-8 GB) — Scales with Resolution²
+### 2. Activations (~2-8 GB), Scales with Resolution²
 
 Intermediate tensors from every transformer layer. At 1024×1024 (sequence length ~4096): ~2 GB. At 2048×2048 (sequence length ~16384): ~8 GB.
 
 **Why quadratic:** double the resolution → 4× the tokens → 4× the activations.
 
-### 3. KV Cache (~1-6 GB) — The Hidden Hog
+### 3. KV Cache (~1-6 GB), The Hidden Hog
 
 Every attention layer stores Key and Value tensors for the current sequence. Modest at 1024×1024, but at 2048×2048 it can hit 6+ GB.
 
-**This is why high-res OOMs.** Weights don't change with resolution. KV cache does — quadratically.
+**This is why high-res OOMs.** Weights don't change with resolution. KV cache does, quadratically.
 
-### 4. VAE Decode (~1-4 GB) — The Final Spike
+### 4. VAE Decode (~1-4 GB), The Final Spike
 
 Converting latent space to pixels creates large temporary tensors. Often the thing that pushes you over the edge at high resolution.
 
-### 5. Framework Overhead (~0.5 GB) — The Tax
+### 5. Framework Overhead (~0.5 GB), The Tax
 
 CUDA context, PyTorch allocator, memory fragmentation. The "where did my last gigabyte go?" tax.
 

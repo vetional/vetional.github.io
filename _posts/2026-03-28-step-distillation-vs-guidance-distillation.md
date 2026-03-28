@@ -2,13 +2,13 @@
 layout: post
 title: "Step Distillation vs Guidance Distillation: Two Ways to Make Diffusion 2× Faster"
 comments: true
-description: "When you can't afford 50 transformer passes per image — a practical guide to choosing between step distillation and guidance distillation."
+description: "When you can't afford 50 transformer passes per image. A practical guide to choosing between step distillation and guidance distillation."
 keywords: "diffusion models distillation progressive distillation guidance distillation classifier-free guidance CFG inference optimization latency"
 ---
 
 {% include animations.html %}
 
-Diffusion models run the transformer **50-100 times** per image. Two distillation techniques cut this down — but they work differently, cost differently to train, and break differently. Here's how to choose.
+Diffusion models run the transformer **50-100 times** per image. Two distillation techniques cut this down, but they work differently, cost differently to train, and break differently. Here's how to choose.
 
 *For background on where GPU memory goes during inference, see [Where Does GPU Memory Actually Go?](/2026/where-does-gpu-memory-go-during-inference/)*
 
@@ -16,24 +16,24 @@ Diffusion models run the transformer **50-100 times** per image. Two distillatio
 
 **What:** Train a student where 1 step = 2 teacher steps. Repeat: 50 → 25 → 12 → 8 → 4.
 
-**Why it works:** Each round only matches 2 consecutive steps — not the full 50-step trajectory. The student is initialized from the teacher's weights, so it converges fast.
+**Why it works:** Each round only matches 2 consecutive steps, not the full 50-step trajectory. The student is initialized from the teacher's weights, so it converges fast.
 
-**The sweet spot:** 4-8 steps. Below 4, faces get soft and textures lose crispness. At 1 step, you need adversarial losses (like SDXL Turbo) to recover sharpness — which reduces output diversity.
+**The sweet spot:** 4-8 steps. Below 4, faces get soft and textures lose crispness. At 1 step, you need adversarial losses (like SDXL Turbo) to recover sharpness. This reduces output diversity.
 
 **Training cost:** Multiple rounds, each requiring a dataset + GPU hours. But you pay once; the distilled model serves forever.
 
 <div class="anim-embed"><step-distillation></step-distillation></div>
 
 **Pitfalls:**
-- Each halving round accumulates error — quality degrades progressively
+- Each halving round accumulates error, so quality degrades progressively
 - v-prediction parameterization is needed (standard ε-prediction breaks at high noise levels with few steps)
-- Reducing steps weakens classifier-free guidance — the effect relies on repeated small adjustments
+- Reducing steps weakens classifier-free guidance because the effect relies on repeated small adjustments
 
 ## Guidance Distillation: Cheaper Steps
 
 **What:** Train a student to produce the guided output in 1 pass instead of 2.
 
-**Why 2 passes exist:** CFG subtracts the unconditional output from the conditional output to isolate the prompt's contribution, then amplifies it 7×. Both passes take the *current* noisy image as input — neither can be precomputed.
+**Why 2 passes exist:** CFG subtracts the unconditional output from the conditional output to isolate the prompt's contribution, then amplifies it 7×. Both passes take the *current* noisy image as input, so neither can be precomputed.
 
 <div class="anim-embed"><diffusion-accel scene="cfg-parallel"></diffusion-accel></div>
 
@@ -43,7 +43,7 @@ Diffusion models run the transformer **50-100 times** per image. Two distillatio
 
 **Pitfalls:**
 - Only helps if you use CFG (most text-to-image models do)
-- Must be applied **before** step distillation — otherwise the guidance effect is already weakened by fewer steps
+- Must be applied **before** step distillation. Otherwise, the guidance effect is already weakened by fewer steps
 - May not perfectly capture guidance at all noise levels, causing subtle prompt adherence issues
 
 ## Decision Guide
@@ -61,7 +61,7 @@ If retraining isn't an option, **caching** skips transformer passes at runtime b
 
 <div class="anim-embed"><diffusion-accel scene="teacache"></diffusion-accel></div>
 
-Caching is orthogonal to distillation — you can stack all three.
+Caching is orthogonal to distillation. You can stack all three.
 
 ## References
 
