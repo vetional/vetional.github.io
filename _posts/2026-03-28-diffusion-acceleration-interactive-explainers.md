@@ -6,6 +6,8 @@ description: "12 interactive animations explaining caching, parallelism, and qua
 keywords: "diffusion models vllm gpu parallelism quantization caching teacache dbcache taylorseer"
 ---
 
+{% include animations.html %}
+
 ## How expensive is generating one image?
 
 A 20B parameter diffusion model (like Qwen-Image) generating a single 1024×1024 image with 50 steps and classifier-free guidance requires roughly **17,200 TFLOPs** of compute.
@@ -62,6 +64,8 @@ From 102 seconds of Call of Duty per image down to 3.3 seconds. That is a **31×
 
 ### Big Picture (1 animation)
 - **GPU Memory Map.** Stacked bars showing memory breakdown at different resolutions and batch sizes. Table mapping each technique to its memory and latency impact.
+
+<div class="anim-scroll"><div class="anim-embed" style="height:700px"><diffusion-accel scene="gpu-memory"></diffusion-accel></div></div>
 
 <a href="/learning-animations/diffusion-accel.html" style="display:inline-block;padding:12px 24px;background:#2ecc71;color:#fff;border-radius:6px;text-decoration:none;font-weight:bold;margin:16px 0;">▶ Launch Interactive Explainers</a>
 
