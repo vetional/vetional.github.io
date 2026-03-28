@@ -82,7 +82,9 @@ The ratio of compute to bandwidth is the **arithmetic intensity**. On an H100, y
 
 **Reduce weights:** FP8 quantization (8→4 GB). Always do this first.
 
-**Reduce dynamic memory:** CPU offloading moves the text encoder to RAM when unused. Caching (TeaCache, DBCache) skips redundant transformer passes.
+**Reduce dynamic memory:** CPU offloading moves the text encoder to RAM when unused. Gradient checkpointing trades compute for memory by recomputing activations instead of storing them.
+
+**Trade memory for speed:** Caching (TeaCache, DBCache) stores previous transformer outputs to skip redundant passes. This uses extra memory for the cache but cuts latency in half. On a memory-constrained GPU, disabling caching frees memory for higher resolutions at the cost of slower generation.
 
 **Distribute across GPUs:** Weight sharding (HSDP), sequence splitting (Ulysses-SP, Ring-Attention), spatial VAE decode (VAE Patch Parallel).
 
