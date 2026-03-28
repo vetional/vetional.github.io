@@ -18,10 +18,15 @@ title: Home
         {% endif %}
       {% endunless %}
       <article class="post-item">
+        {% if post.keywords contains 'diffusion' or post.keywords contains 'distillation' or post.keywords contains 'GPU memory' %}
+        <span class="post-badge">⚡</span>
+        {% endif %}
         <span class="post-meta date-label">{{ post.date | date: "%b %d" }}</span>
         <div class="article-title"><a class="post-link" href="{{ post.url | prepend: site.baseurl }}">{{ post.title }}</a></div>
+        {% if post.description %}
+        <div class="article-desc">{{ post.description }}</div>
+        {% endif %}
       </article>
     {% endfor %}
   </div>
-
 </section>
