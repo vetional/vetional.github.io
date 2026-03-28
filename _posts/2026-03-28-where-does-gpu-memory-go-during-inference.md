@@ -74,15 +74,15 @@ CUDA context, PyTorch allocator, memory fragmentation. The "where did my last gi
 
 Even when the model fits, **bandwidth determines speed.** Reading 8 GB of weights on an H100 (3.35 TB/s) takes 2.4ms. With 4 steps, that's 9.6ms just moving weights.
 
-FP8 halves the bytes → halves the transfer time → faster inference. Caching skips the transfer entirely.
+FP8 halves the bytes → halves the transfer time → faster inference. Caching skips the recomputation, reusing a previously stored result instead.
 
 The ratio of compute to bandwidth is the **arithmetic intensity**. On an H100, you need ~295 FLOPs per byte to keep the GPU busy. Below that, the GPU waits for data.
 
 ## What To Do About It
 
-**Reduce weights:** FP8 quantization (8→4 GB). Always do this first.
+**Reduce weights:** FP8 quantization (4B params × 1 byte = 4 GB, down from 8 GB). Always do this first.
 
-**Reduce dynamic memory:** CPU offloading moves the text encoder to RAM when unused. Gradient checkpointing trades compute for memory by recomputing activations instead of storing them.
+**Reduce dynamic memory:** CPU offloading moves the text encoder to RAM when unused. Reducing batch size to 1 is the simplest way to cut activation memory.
 
 **Trade memory for speed:** Caching (TeaCache, DBCache) stores previous transformer outputs to skip redundant passes. This uses extra memory for the cache but cuts latency in half. On a memory-constrained GPU, disabling caching frees memory for higher resolutions at the cost of slower generation.
 
@@ -95,7 +95,7 @@ The ratio of compute to bandwidth is the **arithmetic intensity**. On an H100, y
 1. **Weights are fixed.** Everything else scales with resolution² × batch size.
 2. **The model card number is for minimum resolution.** Real usage can 2-3× it.
 3. **Bandwidth matters as much as capacity.** Fitting in memory ≠ fast inference.
-4. **No single technique solves everything.** Quantize + cache + parallelize.
+4. **No single technique solves everything.** Quantize weights to save memory, parallelize to scale, cache to trade memory for speed.
 
 ## References
 
