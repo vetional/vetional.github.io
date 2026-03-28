@@ -106,6 +106,7 @@ hr {
 
 .nav {
   min-height: 64px;
+  overflow: hidden;
 }
 
 .navbar {
@@ -282,10 +283,14 @@ hr {
     float: none;
     text-align: center;
     margin-bottom: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4px;
 
     li {
-      padding: 0 0.4em;
-      font-size: 14px;
+      padding: 0 0.3em;
+      font-size: 13px;
     }
   }
 
