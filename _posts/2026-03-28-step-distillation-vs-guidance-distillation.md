@@ -67,6 +67,18 @@ If retraining isn't an option, **caching** skips transformer passes at runtime b
 
 Caching is orthogonal to distillation. You can stack all three.
 
+## Always validate with a golden set
+
+Distillation and quantization both trade quality for speed. The tradeoff is different for every model, every dataset, and every use case. You must measure it before deploying.
+
+Build a **validation set** of 200-500 prompts that represent your production traffic. Include edge cases: long prompts, rare styles, text rendering, faces, fine details. Generate images with both the teacher (full model, 50 steps, CFG) and the student (distilled/quantized). Compare using:
+
+- **FID** (Frechet Inception Distance): measures distribution-level quality. Lower is better. Expect 1-5 point increase after distillation.
+- **CLIP score**: measures prompt-image alignment. If this drops significantly, your guidance distillation may be too aggressive.
+- **Human evaluation**: no metric replaces looking at the outputs. Have 2-3 people rate 100 pairs blind. Focus on faces, text, and fine textures.
+
+Run this validation after every change: after quantization, after each distillation round, after combining techniques. The quality loss compounds. A 2% drop from FP8 plus a 5% drop from step distillation plus a 3% drop from guidance distillation can add up to a noticeable degradation that no single step revealed.
+
 ## References
 
 1. Salimans, Ho. "[Progressive Distillation for Fast Sampling of Diffusion Models](https://arxiv.org/abs/2202.00512)", ICLR 2022.

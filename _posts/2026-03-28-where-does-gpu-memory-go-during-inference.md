@@ -35,7 +35,7 @@ Using [FLUX.2 klein 4B](https://huggingface.co/black-forest-labs/FLUX.2-klein-4B
 
 4B params × 2 bytes (BF16) = 8 GB. Always in memory regardless of resolution or batch size. Includes the DiT transformer, text encoder, and VAE decoder.
 
-**With FP8:** drops to ~4 GB. This is the single biggest win for memory-constrained deployment.
+**With FP8:** drops to ~4 GB. This is the single biggest win for memory-constrained deployment. Always validate output quality against a golden set after quantizing. Some models tolerate FP8 well, others show visible degradation on faces or fine text.
 
 ### 2. Activations (~2-8 GB), Scales with Resolution²
 

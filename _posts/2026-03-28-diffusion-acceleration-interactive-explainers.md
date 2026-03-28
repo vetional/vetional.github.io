@@ -58,6 +58,8 @@ These techniques stack. Applied together:
 
 From 102 seconds of Call of Duty per image down to 3.3 seconds. A **31× reduction**.
 
+**Important:** these optimizations compound quality loss too. Always validate against a golden set of 200-500 representative prompts after each optimization. Measure FID, CLIP score, and do blind human evaluation on faces, text, and fine details. A small drop at each stage can add up to a noticeable degradation.
+
 ## The big picture: where GPU memory goes
 
 The animation below shows how GPU memory is split between model weights, activations, KV cache, and VAE decode, and how each technique targets a different piece. For a deeper dive, see [Where Does GPU Memory Actually Go During Inference?](/2026/where-does-gpu-memory-go-during-inference/)
