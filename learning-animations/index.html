@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Animated Explainers</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Fira Code', monospace;
+      background: #fafafa;
+      color: #2C3E50;
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 60px 20px;
+    }
+    h1 { font-size: 1.8rem; margin-bottom: 6px; }
+    .subtitle { color: #95A5A6; font-size: 0.85rem; margin-bottom: 40px; }
+    a.card {
+      display: block;
+      padding: 20px 24px;
+      margin-bottom: 16px;
+      background: #fff;
+      border: 1px solid #ECF0F1;
+      border-radius: 10px;
+      text-decoration: none;
+      color: #2C3E50;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    a.card:hover {
+      border-color: #4A90D9;
+      box-shadow: 0 2px 12px rgba(74,144,217,0.12);
+    }
+    .card-title { font-size: 1.1rem; font-weight: bold; margin-bottom: 4px; }
+    .card-desc { font-size: 0.82rem; color: #95A5A6; }
+  </style>
+</head>
+<body>
+  <h1>Interactive Animated Explainers</h1>
+  <p class="subtitle">samwho.dev-style visualizations for technical concepts</p>
+
+  <a class="card" href="p90.html">
+    <div class="card-title">🍳 P90 is Neither Additive Nor Commutative</div>
+    <div class="card-desc">Why P90(kitchen) + P90(delivery) ≠ P90(total), and why per-branch P90 averages mislead.</div>
+  </a>
+
+  <a class="card" href="distillation.html">
+    <div class="card-title">🎨 Step Distillation Explained</div>
+    <div class="card-desc">How FLUX Schnell generates images in 1–4 steps instead of 50, using progressive distillation.</div>
+  </a>
+
+  <a class="card" href="guidance.html">
+    <div class="card-title">🎯 Guidance Distillation Explained</div>
+    <div class="card-desc">Why classifier-free guidance costs 2x per step, and how distillation eliminates the double pass.</div>
+  </a>
+
+  <a class="card" href="parallelism.html">
+    <div class="card-title">🖥️ GPU Parallelism Strategies</div>
+    <div class="card-desc">Data, pipeline, and tensor parallelism — 3 ways to split work across GPUs with tradeoffs.</div>
+  </a>
+
+  <a class="card" href="diffusion-accel.html">
+    <div class="card-title">⚡ Diffusion Acceleration (vLLM-Omni)</div>
+    <div class="card-desc">11 interactive explainers: TeaCache, DBCache, TaylorSeer, SCM, Ulysses-SP, Ring-Attention, HSDP, CFG-Parallel, VAE Patch, and quantization.</div>
+  </a>
+</body>
+</html>

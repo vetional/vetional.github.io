@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guidance Distillation — Interactive Explainer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Fira Code', monospace;
+      background: #fafafa;
+      color: #2C3E50;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+    }
+    h1 { font-size: 1.6rem; margin-bottom: 8px; }
+    .subtitle { color: #95A5A6; font-size: 0.85rem; margin-bottom: 24px; }
+    guidance-distillation {
+      width: 900px;
+      height: 580px;
+      border: 1px solid #ECF0F1;
+      border-radius: 12px;
+      background: #fff;
+      overflow: hidden;
+    }
+    .hint { margin-top: 12px; color: #95A5A6; font-size: 0.75rem; }
+  </style>
+</head>
+<body>
+  <h1>Guidance Distillation Explained</h1>
+  <p class="subtitle">How to make each diffusion step 2x cheaper by eliminating the double pass</p>
+  <guidance-distillation></guidance-distillation>
+  <p class="hint">Click anywhere on the visualization to replay the animation</p>
+  <script src="out/index.js"></script>
+</body>
+</html>

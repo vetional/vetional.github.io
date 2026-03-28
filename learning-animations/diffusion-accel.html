@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diffusion Acceleration — Interactive Explainers</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Fira Code', monospace;
+      background: #fafafa;
+      color: #2C3E50;
+      display: flex;
+      min-height: 100vh;
+    }
+    nav {
+      width: 260px;
+      min-width: 260px;
+      background: #fff;
+      border-right: 1px solid #ECF0F1;
+      padding: 20px 0;
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      overflow-y: auto;
+    }
+    nav h2 { font-size: 0.95rem; padding: 0 16px; margin-bottom: 16px; }
+    nav .section-title {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      color: #95A5A6;
+      padding: 12px 16px 4px;
+      letter-spacing: 0.05em;
+    }
+    nav a {
+      display: block;
+      padding: 6px 16px;
+      color: #2C3E50;
+      text-decoration: none;
+      font-size: 0.78rem;
+      border-left: 3px solid transparent;
+      transition: all 0.15s;
+    }
+    nav a:hover { background: #f0f4f8; }
+    nav a.active { border-left-color: #4A90D9; background: #EBF5FB; color: #4A90D9; font-weight: bold; }
+    main {
+      margin-left: 260px;
+      flex: 1;
+      padding: 30px 40px;
+      max-width: 960px;
+    }
+    h1 { font-size: 1.5rem; margin-bottom: 6px; }
+    .subtitle { color: #95A5A6; font-size: 0.82rem; margin-bottom: 30px; }
+    .anim-section { margin-bottom: 50px; scroll-margin-top: 20px; }
+    .anim-section h2 { font-size: 1.15rem; margin-bottom: 8px; }
+    .anim-section .desc { color: #95A5A6; font-size: 0.8rem; margin-bottom: 14px; }
+    .anim-container {
+      width: 100%;
+      height: 620px;
+      border: 1px solid #ECF0F1;
+      border-radius: 10px;
+      background: #fff;
+      overflow: hidden;
+    }
+    diffusion-accel {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+    .hint { margin-top: 6px; color: #BDC3C7; font-size: 0.68rem; }
+  </style>
+</head>
+<body>
+  <nav>
+    <h2>⚡ Diffusion Accel</h2>
+    <div class="section-title">Caching</div>
+    <a href="#why-cache">Why Cache?</a>
+    <a href="#teacache">TeaCache</a>
+    <a href="#dbcache">DBCache</a>
+    <a href="#taylorseer">TaylorSeer</a>
+    <a href="#scm">SCM Masking</a>
+    <div class="section-title">Parallelism</div>
+    <a href="#cfg-parallel">CFG-Parallel</a>
+    <a href="#ulysses-sp">Ulysses-SP</a>
+    <a href="#ring-attention">Ring-Attention</a>
+    <a href="#hsdp">HSDP</a>
+    <a href="#vae-patch">VAE Patch Parallel</a>
+    <div class="section-title">Quantization</div>
+    <a href="#quantization">FP8 / Int8</a>
+    <div class="section-title">Big Picture</div>
+    <a href="#gpu-memory">GPU Memory Map</a>
+  </nav>
+  <main>
+    <h1>Diffusion Acceleration Explained</h1>
+    <p class="subtitle">Interactive visual guide to caching, parallelism, and quantization for diffusion models</p>
+
+    <!-- CACHING -->
+    <div class="anim-section" id="why-cache">
+      <h2>🔄 Why Cache? — The Redundancy Problem</h2>
+      <p class="desc">Consecutive diffusion steps produce nearly identical transformer outputs. Why recompute what barely changed?</p>
+      <div class="anim-container"><diffusion-accel scene="why-cache"></diffusion-accel></div>
+      <p class="hint">Click to replay</p>
+    </div>
+
+    <div class="anim-section" id="teacache">
+      <h2>🍵 TeaCache — Simple Adaptive Caching</h2>
+      <p class="desc">Compare outputs between steps. If similar enough (below threshold), reuse the cached result. 1.5–2x speedup.</p>
+      <div class="anim-container"><diffusion-accel scene="teacache"></diffusion-accel></div>
+      <p class="hint">Click to replay</p>
+    </div>
+
+    <div class="anim-section" id="dbcache">
+      <h2>🧱 DBCache — Dual Block Cache</h2>
+      <p class="desc">Run only the first N transformer blocks, measure residual difference. If small → cache the rest. If large → compute all.</p>
+      <div class="anim-container"><diffusion-accel scene="dbcache"></diffusion-accel></div>
+      <p class="hint">Click to replay</p>
+    </div>
+
+    <div class="anim-section" id="taylorseer">
+      <h2>🔮 TaylorSeer — Predict Instead of Compute</h2>
+      <p class="desc">Use Taylor expansion to forecast the next step's output from previous derivatives. Skip computation entirely.</p>
+      <div class="anim-container"><diffusion-accel scene="taylorseer"></diffusion-accel></div>
+      <p class="hint">Click to replay</p>
+    </div>
+
+    <div class="anim-section" id="scm">
+      <h2>🎭 SCM — Step Computation Masking</h2>
+      <p class="desc">Pre-define which steps to compute and which to cache. Like a schedule: "compute, cache, cache, compute..."</p>
+      <div class="anim-container"><diffusion-accel scene="scm"></diffusion-accel></div>
+      <p class="hint">Click to replay</p>
+    </div>
+
+    <!-- PARALLELISM -->
+    <div class="anim-section" id="cfg-parallel">
+      <h2>🔀 CFG-Parallel — Split Guidance Branches</h2>
+      <p class="desc">Run positive and negative CFG prompts on separate GPUs, merge results. 2x faster per step.</p>
+      <div class="anim-container"><diffusion-accel scene="cfg-parallel"></diffusion-accel></div>
+      <p class="hint">Click to replay</p>
+    </div>
+
+    <div class="anim-section" id="ulysses-sp">
+      <h2>⚔️ Ulysses-SP — Split Sequence, All-to-All Heads</h2>
+      <p class="desc">Split input sequence across GPUs. Each GPU computes a subset of attention heads via all-to-all communication.</p>
+      <div class="anim-container"><diffusion-accel scene="ulysses-sp"></diffusion-accel></div>
+      <p class="hint">Click to replay</p>
+    </div>
+
+    <div class="anim-section" id="ring-attention">
+      <h2>💍 Ring-Attention — Circulate K/V Blocks</h2>
+      <p class="desc">Split sequence across GPUs in a ring. K/V blocks circulate around the ring, accumulating attention results.</p>
+      <div class="anim-container"><diffusion-accel scene="ring-attention"></diffusion-accel></div>
+      <p class="hint">Click to replay</p>
+    </div>
+
+    <div class="anim-section" id="hsdp">
+      <h2>🧩 HSDP — Hybrid Sharded Data Parallel</h2>
+      <p class="desc">Shard model weights across GPUs using FSDP2. Each GPU holds a fraction, weights gathered on-demand during forward pass.</p>
+      <div class="anim-container"><diffusion-accel scene="hsdp"></diffusion-accel></div>
+      <p class="hint">Click to replay</p>
+    </div>
+
+    <div class="anim-section" id="vae-patch">
+      <h2>🧩 VAE Patch Parallelism — Spatial Decode Split</h2>
+      <p class="desc">Split the VAE decode spatially across GPUs. Each GPU decodes a patch, then stitch together.</p>
+      <div class="anim-container"><diffusion-accel scene="vae-patch"></diffusion-accel></div>
+      <p class="hint">Click to replay</p>
+    </div>
+
+    <!-- QUANTIZATION -->
+    <div class="anim-section" id="quantization">
+      <h2>📐 FP8 / Int8 Quantization</h2>
+      <p class="desc">Reduce DiT linear layers from BF16 to FP8 or Int8. ~1.28x speedup with minimal quality loss.</p>
+      <div class="anim-container"><diffusion-accel scene="quantization"></diffusion-accel></div>
+      <p class="hint">Click to replay</p>
+    </div>
+
+    <!-- BIG PICTURE -->
+    <div class="anim-section" id="gpu-memory">
+      <h2>🧠 GPU Memory Map — Where It All Goes</h2>
+      <p class="desc">A single GPU must hold model weights, activations, KV cache, and VAE decode tensors. Here's how the techniques we've explored reduce each piece.</p>
+      <div class="anim-container"><diffusion-accel scene="gpu-memory"></diffusion-accel></div>
+      <p class="hint">Click to replay</p>
+    </div>
+  </main>
+
+  <script src="out/index.js"></script>
+  <script>
+    // Side-nav active state on scroll
+    const sections = document.querySelectorAll('.anim-section');
+    const navLinks = document.querySelectorAll('nav a');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          navLinks.forEach(l => l.classList.remove('active'));
+          const link = document.querySelector(`nav a[href="#${entry.target.id}"]`);
+          if (link) link.classList.add('active');
+        }
+      });
+    }, { threshold: 0.3 });
+    sections.forEach(s => observer.observe(s));
+  </script>
+</body>
+</html>
