@@ -3,7 +3,7 @@ layout: post
 title: "Serving TensorFlow on 512MB Android Devices"
 comments: true
 description: "How we froze TF graphs, quantized weights, and shipped CNN/LSTM models on budget Android phones at Indus OS"
-keywords: "tensorflow android, graph freezing, quantization, tf lite, mobile ml, 512mb, indus os"
+keywords: "tensorflow android, graph freezing, quantization, mobile ml, 512mb, indus os"
 ---
 
 At Indus OS we shipped ML models to Micromax and Lava phones with 512MB RAM. The OS itself consumed 300MB. That left roughly 200MB for all running apps. TensorFlow's default runtime was 20MB+ before loading a single model. We had to get inference working under 50MB total memory.
@@ -70,6 +70,6 @@ Here is what our memory breakdown looked like on a Micromax Canvas Spark (512MB 
 
 Selective registration was the single biggest win. Without it, the project was dead on arrival. Quantization gave us the model size reduction we needed with acceptable accuracy.
 
-What didn't work: TF Lite (still experimental at the time) crashed on several Mediatek chipsets. We also tried NNAPI but it simply wasn't available on Android 5.1 which was our target. We stuck with the native TF C API through JNI.
+What didn't work: the full TensorFlow runtime was too large for our memory budget. We had to strip unused ops manually using selective registration, which was tedious and error-prone. Any missing op caused a silent crash on device. We also tried running inference purely through the C API to avoid the Java overhead, which saved about 8MB but required writing JNI wrappers for every model input/output.
 
 The lesson: on constrained devices, the framework overhead matters more than the model itself. We spent 70% of our optimization time on the runtime, not the model.

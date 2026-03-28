@@ -95,4 +95,4 @@ Each step used a different image with only the tools it needed. The train image 
 
 Docker eliminated environment drift completely. Build times went from "2 hours plus debugging" to "45 minutes, deterministic." New engineers could build on day one instead of spending a week setting up their environment.
 
-What didn't work: Docker on macOS was painfully slow for our builds because of the filesystem virtualization layer. We moved CI to a Linux server and kept macOS only for development. Also, the Docker images were large (2.5GB for the full TF build environment). We eventually used multi-stage builds to keep the final images smaller, but the build stage image stayed big. Storage was cheap. Engineer time was not.
+What didn't work: Docker on macOS was painfully slow for our builds because of the filesystem virtualization layer. We moved CI to a Linux server and kept macOS only for development. Also, the Docker images were large (2.5GB for the full TF build environment). We considered splitting the Dockerfile into separate build and runtime images, but the complexity was not worth it for our small team. Storage was cheap. Engineer time was not.
