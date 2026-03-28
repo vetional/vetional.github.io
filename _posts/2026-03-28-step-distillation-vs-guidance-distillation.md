@@ -6,6 +6,8 @@ description: "When you can't afford 50 transformer passes per image — a practi
 keywords: "diffusion models distillation progressive distillation guidance distillation classifier-free guidance CFG inference optimization latency"
 ---
 
+{% include animations.html %}
+
 You've got a diffusion model that generates beautiful images. There's just one problem: it takes **50 transformer passes** to produce a single image. On your hardware, that's seconds — not milliseconds. Your users won't wait, and your GPU bill is already too high.
 
 Two distillation techniques can help. They attack the problem from different angles, and choosing the wrong one wastes your limited training budget. Here's how to decide.
@@ -20,7 +22,7 @@ If you're using classifier-free guidance (CFG) — and you almost certainly are,
 
 On a single GPU, that's the difference between serving 10 users and serving 100.
 
-<a href="https://vetional.github.io/learning-animations/diffusion-accel.html" style="display:inline-block;padding:8px 16px;background:#4a90d9;color:#fff;border-radius:4px;text-decoration:none;font-size:0.9em;">▶ See the interactive "Why Cache?" animation</a>
+<div class="anim-embed"><diffusion-accel scene="why-cache"></diffusion-accel></div>
 
 ## Option 1: Step Distillation — Cut the Number of Steps
 
@@ -34,7 +36,7 @@ On a single GPU, that's the difference between serving 10 users and serving 100.
 
 **Sweet spot for resource-constrained deployment: 4-8 steps.** This is where you get the most speedup per unit of quality loss.
 
-<a href="https://vetional.github.io/learning-animations/distillation.html" style="display:inline-block;padding:8px 16px;background:#4a90d9;color:#fff;border-radius:4px;text-decoration:none;font-size:0.9em;">▶ See the interactive Step Distillation animation</a>
+<div class="anim-embed"><step-distillation></step-distillation></div>
 
 ## Option 2: Guidance Distillation — Make Each Step Cheaper
 
@@ -48,7 +50,7 @@ On a single GPU, that's the difference between serving 10 users and serving 100.
 
 **Why "first" matters:** CFG works by making small adjustments to the predicted direction at every step. Fewer steps = fewer adjustments = weaker guidance. If you distill guidance into the model before reducing steps, the effect is baked in and survives the step reduction.
 
-<a href="https://vetional.github.io/learning-animations/guidance.html" style="display:inline-block;padding:8px 16px;background:#4a90d9;color:#fff;border-radius:4px;text-decoration:none;font-size:0.9em;">▶ See the interactive Guidance Distillation animation</a>
+<div class="anim-embed"><diffusion-accel scene="cfg-parallel"></diffusion-accel></div>
 
 ## Decision Guide
 
@@ -79,11 +81,19 @@ On a single GPU, that's the difference between serving 10 users and serving 100.
 
 If retraining isn't an option, caching techniques skip transformer passes at runtime by detecting when consecutive steps produce nearly identical outputs. The transformer predicts almost the same direction at step 45 and step 46 — so why recompute it?
 
+<div class="anim-embed"><diffusion-accel scene="teacache"></diffusion-accel></div>
+
 Techniques like TeaCache measure the L1 distance between consecutive outputs and reuse the cached result when the difference is below a threshold. DBCache goes further: run only the first 2 transformer layers to decide whether to cache the remaining 22. TaylorSeer predicts the next output from the trend using Taylor expansion — zero GPU cost.
 
 These are orthogonal to distillation. You can stack all three: guidance distillation + step distillation + caching.
 
-<a href="https://vetional.github.io/learning-animations/diffusion-accel.html" style="display:inline-block;padding:8px 16px;background:#2ecc71;color:#fff;border-radius:4px;text-decoration:none;font-size:0.9em;">▶ Explore all 12 Diffusion Acceleration animations</a>
+## The Big Picture
+
+Where does all the GPU memory go, and which technique helps where?
+
+<div class="anim-embed"><diffusion-accel scene="gpu-memory"></diffusion-accel></div>
+
+No single technique solves everything. The practical recipe: quantize weights (FP8) + distill guidance + reduce steps + cache at runtime.
 
 ## References
 
