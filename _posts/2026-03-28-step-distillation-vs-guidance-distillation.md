@@ -76,6 +76,7 @@ Build a **validation set** of 200-500 prompts that represent your production tra
 - **FID** (Frechet Inception Distance): measures distribution-level quality. Lower is better. Expect 1-5 point increase after distillation.
 - **CLIP score**: measures prompt-image alignment. If this drops significantly, your guidance distillation may be too aggressive.
 - **Human evaluation**: no metric replaces looking at the outputs. Have 2-3 people rate 100 pairs blind. Focus on faces, text, and fine textures.
+- **LLM-as-a-judge**: use a vision-language model (like GPT-4o or Gemini) to score image quality, prompt adherence, and artifact detection at scale. This automates what human eval does manually and scales to your full validation set. Note: this is a costly option. Each image evaluation requires a VLM API call, so running it on 500 images can cost $5-15 per evaluation round. Use it for final validation, not iterative tuning.
 
 Run this validation after every change: after quantization, after each distillation round, after combining techniques. The quality loss compounds. A 2% drop from FP8 plus a 5% drop from step distillation plus a 3% drop from guidance distillation can add up to a noticeable degradation that no single step revealed.
 
