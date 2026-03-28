@@ -76,8 +76,8 @@
     @media (max-width: 700px) {
       body { flex-direction: column; }
       nav {
-        width: 100%;
-        min-width: 100%;
+        width: 100% !important;
+        min-width: 0 !important;
         height: auto;
         position: relative;
         border-right: none;
@@ -90,6 +90,8 @@
       main {
         padding: 16px;
         max-width: 100%;
+        margin-left: 0 !important;
+        width: 100%;
       }
       h1 { font-size: 1.3rem; }
       .subtitle { font-size: 0.78rem; margin-bottom: 16px; }
