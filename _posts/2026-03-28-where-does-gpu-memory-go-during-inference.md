@@ -88,7 +88,7 @@ The ratio of compute to bandwidth is the **arithmetic intensity**. On an H100, y
 
 **Distribute across GPUs:** Weight sharding (HSDP), sequence splitting (Ulysses-SP, Ring-Attention), spatial VAE decode (VAE Patch Parallel).
 
-**Reduce step count:** [Step distillation and guidance distillation](/2026/step-distillation-vs-guidance-distillation/) cut the number of transformer passes from 50-100 down to 4-8.
+**Reduce generation time:** [Step distillation and guidance distillation](/2026/step-distillation-vs-guidance-distillation/) cut the number of transformer passes from 50-100 down to 4-8. This does not reduce peak memory (each step uses the same amount), but it directly reduces wall-clock time and GPU cost per image.
 
 ## Key Takeaways
 
