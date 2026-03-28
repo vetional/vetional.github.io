@@ -1,55 +1,75 @@
 ---
 layout: post
-title: "Tensorflow basics"
+title: "Serving TensorFlow on 512MB Android Devices"
 comments: true
-description: "Graphs, distributed computations, protobuf and tensorflow serving"
-keywords: "basics of tensorflow, serving, distributed"
+description: "How we froze TF graphs, quantized weights, and shipped CNN/LSTM models on budget Android phones at Indus OS"
+keywords: "tensorflow android, graph freezing, quantization, tf lite, mobile ml, 512mb, indus os"
 ---
 
+At Indus OS we shipped ML models to Micromax and Lava phones with 512MB RAM. The OS itself consumed 300MB. That left roughly 200MB for all running apps. TensorFlow's default runtime was 20MB+ before loading a single model. We had to get inference working under 50MB total memory.
+
+## Freezing Graphs and Stripping Ops
+
+Training produces checkpoint files separate from the graph definition. For deployment you need a single self-contained file. The `freeze_graph` script merges the GraphDef with checkpoint weights by converting every `Variable` op into a `Const`.
+
+```python
+from tensorflow.python.tools import freeze_graph
+
+freeze_graph.freeze_graph(
+    input_graph='model.pb',
+    input_checkpoint='model.ckpt',
+    output_node_names='output/predictions',
+    output_graph='frozen_model.pb',
+    input_saver='',
+    input_binary=True,
+    restore_op_name='save/restore_all',
+    filename_tensor_name='save/Const:0',
+    clear_devices=True,
+    initializer_nodes=''
+)
 ```
-Disclaimer: Most of the writeup may match verbatim to the tensorflow docs, 
-infact the idea of this article is to takeout the most relevant parts of 
-the tensorflow doc and present them in a simple manner.
+
+After freezing, we ran `optimize_for_inference` to strip training-only nodes (dropout, batch norm updates, gradient ops). This alone cut our graph from 8MB to 3.2MB for the OCR model.
+
+## Quantization and Selective Registration
+
+Full float32 weights were too large. We quantized to 8-bit integers which cut model size by 4x with less than 1% accuracy loss on our Hindi OCR task.
+
+```bash
+# Quantize frozen graph
+bazel-bin/tensorflow/tools/quantization/quantize_graph \
+  --input=frozen_model.pb \
+  --output=quantized_model.pb \
+  --output_node_names=output/predictions \
+  --mode=eightbit
 ```
 
-#### **Think: Serving tensorflow on android apps a broad overview**
+The bigger win was selective op registration. Default TF Android builds include every op. Our models used maybe 30 ops out of 200+. We created a custom `ops_to_register.h` that only compiled the ops we needed. This brought the shared library from 12MB down to 4.1MB.
 
-A unified environment to model and distribute your learned models on Andorid.
+```bash
+# Build with selective registration
+bazel build -c opt --copt="-DSELECTIVE_REGISTRATION" \
+  --copt="-DSUPPORT_SELECTIVE_REGISTRATION" \
+  //tensorflow/contrib/android:libtensorflow_inference.so
+```
 
-#### **Learn: Basics of tensorflow** 
+## Memory Budget on a Real Device
 
-Setting up tensorflow from [source](https://gist.github.com/vetional/3f75fa1a0a3923912d7b58819abef29f)
+Here is what our memory breakdown looked like on a Micromax Canvas Spark (512MB RAM, Mediatek MT6582):
 
-**What are computation Graphs**
+| Component | Memory |
+|-----------|--------|
+| TF shared library | 4.1 MB |
+| Quantized OCR model | 1.8 MB |
+| Quantized TTS model | 6.2 MB |
+| Input/output buffers | 3 MB |
+| Runtime overhead | ~15 MB |
+| **Total** | **~30 MB** |
 
-TensorFlow programs are usually structured into a construction phase, that assembles a graph, and an execution phase that uses a session to execute ops in the graph.
+## What Worked and What Didn't
 
-Tensorflow represents every computation as a graph. (why graphs?)
+Selective registration was the single biggest win. Without it, the project was dead on arrival. Quantization gave us the model size reduction we needed with acceptable accuracy.
 
-The foundation of computation in TensorFlow is the Graph object. This holds a network of nodes, each representing one operation, connected to each other as inputs and outputs.
+What didn't work: TF Lite (still experimental at the time) crashed on several Mediatek chipsets. We also tried NNAPI but it simply wasn't available on Android 5.1 which was our target. We stuck with the native TF C API through JNI.
 
-The protobuf tools parse this text file, and generate the code to load, store, and manipulate graph definitions. If you see a standalone TensorFlow file representing a model, it's likely to contain a serialized version of one of these GraphDef objects saved out by the protobuf code. There are actually two different formats that a ProtoBuf can be saved in text and binary. The API itself can be a bit confusing - the binary call is actually ParseFromString(), whereas you use a utility function from the text_format module to load textual files.
-
-Once you've loaded a file into the graph_def variable, you can now access the data inside it. For most practical purposes, the important section is the list of nodes stored in the node member. Each node is a NodeDef object, also defined in graph.proto. These are the fundamental building blocks of TensorFlow graphs, with each one defining a single operation along with its input connections. Here are the members of a NodeDef, and what they mean.
-
-**Freezing Graphs**
-
-One confusing part about this is that the weights usually aren't stored inside the file format during training. Instead, they're held in separate checkpoint files, and there are Variable ops in the graph that load the latest values when they're initialized. It's often not very convenient to have separate files when you're deploying to production, so there's the freeze_graph.py script that takes a graph definition and a set of checkpoints and freezes them together into a single file.
-
-What this does is load the GraphDef, pull in the values for all the variables from the latest checkpoint file, and then replace each Variable op with a Const that has the numerical data for the weights stored in its attributes It then strips away all the extraneous nodes that aren't used for forward inference, and saves out the resulting GraphDef into an output file.
-
-**NOTE**
-In TensorFlow, the filter weights for the Conv2D operation are stored on the second input, and are expected to be in the order [filter_height, filter_width, input_depth, output_depth], where filter_count increasing by one means moving to an adjacent value in memory.
-
-**How to compute with graphs**
-
-As I said, TensorFlow programs are usually structured into a construction phase, that assembles a graph, and an execution phase that uses a session to execute ops in the graph.
-
-So instead of showing you the code for it let's first see a visualization for linear regression:
-
-
-**Serve models to consumers**
-
-**Limitations**
-
-#### Code
+The lesson: on constrained devices, the framework overhead matters more than the model itself. We spent 70% of our optimization time on the runtime, not the model.

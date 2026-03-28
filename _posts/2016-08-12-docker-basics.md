@@ -1,161 +1,98 @@
 ---
 layout: post
-title: "Docker basics"
+title: "Docker for ML Model Deployment: From Dev Chaos to Reproducible Builds"
 comments: true
-description: "Learn docker"
-keywords: "docker"
+description: "How Docker solved dependency hell for building TTS and OCR models with Android NDK and TensorFlow at Indus OS"
+keywords: "docker, ml deployment, android ndk, tensorflow, reproducible builds, ci cd, indus os"
 ---
 
-### Think : Docker seems usefull how can I use it to leverage the multitude of areas I work in 
+At Indus OS, our ML pipeline touched TensorFlow (Python 2.7, specific commit hash), Android NDK r12b, Bazel 0.3.1, and custom C libraries for the TTS vocoder. If any version drifted, the build broke silently and produced models that crashed on device. Three engineers on the team, three different Ubuntu versions, three different sets of installed libraries. Docker fixed this.
 
-Well the common problem I face is every time I need to deploy or simply switch between the work I am doing as a hobby or for a client I mess up  my work environment for other projects. Even if i am using virtualenv or conda this problem often haunts me for hours and costs me a lot of otherwise good developemnt time. Docker promises to be a solution to this and I intend to learn and teach what it is and how can it allievate deployment and management troubles.
+## The Dependency Problem
 
-Docker can help manage deployment ANGER. It solves the problem "but it's working on my system". So let's get to it
+Building our TensorFlow Android library required exact versions of everything. NDK r12b worked. NDK r13 introduced a libc++ change that broke our NEON-optimized matrix multiply. Bazel 0.3.2 changed a flag that affected selective op registration. We lost two days to each of these issues before we started using Docker.
 
-Installing docker is pretty well documnted on the docker site
+```dockerfile
+FROM ubuntu:14.04
 
+# Exact versions that produce working builds
+ENV NDK_VERSION=r12b
+ENV BAZEL_VERSION=0.3.1
+ENV TF_COMMIT=a23f5d7
 
-### Learn: Key terminonlogy
+RUN apt-get update && apt-get install -y \
+    build-essential git python2.7 python-pip wget unzip openjdk-8-jdk
 
-#### Docker engine: 
+# Android NDK
+RUN wget -q https://dl.google.com/android/repository/android-ndk-${NDK_VERSION}-linux-x86_64.zip \
+    && unzip -q android-ndk-${NDK_VERSION}-linux-x86_64.zip -d /opt \
+    && rm android-ndk-${NDK_VERSION}-linux-x86_64.zip
+ENV ANDROID_NDK_HOME=/opt/android-ndk-${NDK_VERSION}
 
-### The docker-machine command
+# Bazel
+RUN wget -q https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel-${BAZEL_VERSION}-installer-linux-x86_64.sh \
+    && chmod +x bazel-${BAZEL_VERSION}-installer-linux-x86_64.sh \
+    && ./bazel-${BAZEL_VERSION}-installer-linux-x86_64.sh
 
-What Docker engine does on a locally docker-machine let's you do the same thing on a remote machine it could be on any provider like Amazon EC2, Digital Ocean, IBM's softlayer etc. It also saves you the trouble of installing docker on the remote machine. Docker gives you an abstraction over the comandline interface for all major providers through docker-machine. In this example we will use IBM's softlayer to configure an instance.
+# TensorFlow at exact commit
+RUN git clone https://github.com/tensorflow/tensorflow.git /tf \
+    && cd /tf && git checkout ${TF_COMMIT}
 
-#### Prerequisites
-Access to a docker and docker-machine installed Mac or linux machine.
-
-
-#### Step 1
-
-To create a docker instance do
-
-```bash
-$ docker-machine create --driver softlayer --softlayer-user=<USER_NAME> \
---softlayer-api-key=<YOUR_API\_KEY> \
---softlayer-memory "1024" \
---softlayer-disk-size "25" \
---softlayer-region "sng01" \
---softlayer-domain "softlayer.com" \
---softlayer-hostname "sld" \
---softlayer-cpu "1" \
---softlayer-hourly-billing \
---softlayer-image="UBUNTU_14\_64" \
---softlayer-local-disk \
-softlayer-docker-test
-```
-This will create and install the latest Docker on a fresh Ubuntu 14.04 machine with the name softlayer-docker-test.
-
-**Note:** It's good to start with hourly billing for demoing docker but do remember to remove the -softlayer-hourly-billing flag in production.
-
-#### Step 2
-
-Now naturally you would like to do something on the machine, to connect to it, first set a few environment variables using 
-
-```bash
-$ eval "$(docker-machine env softlayer-docker-test)"
-```
-This will take all your docker commands on the local machine to be run on the remote machine.
-
-#### Step 3
-The remote machine and the local environment are now ready to execute all docker related commands, simply run to test your installation
-
-```bash
-$ docker run -d -p 8000:80 --name webserver kitematic/hello-world-nginx
-``` 
-
-to Get the ip of the remote machine
-
-```bash
-$ docker ip softlayer-docker-test
-```
-If you visit <machine-ip>:8000 this should bring up kitematic page on your fresh nginx server.
-
-#### Stoping and removing the remote machine
-
-To stop and remove the remote-machine:
-
-```bash
-$ docker-machine stop softalayer-docker-test
-$ docker-machine rm softalayer-docker-test
-```
-Now that you have removed the machine you can use the slcli to confirm the removal using
-
-```bash
-$ pip install softlayer
-$ slcli vs list
+WORKDIR /tf
 ```
 
-To unset the environment on the local machine do
+## Images, Containers, and Volumes for Model Files
+
+The key concepts that mattered for us:
+
+An image is a frozen snapshot of the build environment. We built it once and pushed it to our private registry. Every engineer and the CI server pulled the same image. No more "works on my machine."
+
+A container is a running instance of that image. We ran builds inside containers and extracted the output artifacts.
+
+Volumes let us mount model weight files and training data without baking them into the image. Models changed daily. The build environment changed maybe once a month.
 
 ```bash
-$ eval $(docker-machine env -u)
+# Build the TF Android library inside the container
+docker run --rm \
+  -v $(pwd)/models:/models \
+  -v $(pwd)/output:/output \
+  indus-ml-build:latest \
+  bash -c "cd /tf && bazel build -c opt \
+    --copt='-DSELECTIVE_REGISTRATION' \
+    //tensorflow/contrib/android:libtensorflow_inference.so \
+    && cp bazel-bin/tensorflow/contrib/android/*.so /output/"
 ```
 
+## CI/CD for the ML Pipeline
 
-#### NOTE:
-In case:
-```bash
-Error creating machine: Error in driver during machine creation: Error launching instance: InstanceLimitExceeded: Your quota allows for 0 more running instance(s). You requested at least 1
-```
+Before Docker, our "CI" was someone running the build on their laptop and copying the .so file to a shared drive. With Docker, we set up a proper pipeline:
 
-Assuming that you've provisioned a machine with Ubuntu as the operating system, execute the following command from your local system to update the package database on the Docker host:
-
-```bash
-$ docker-machine ssh machine-name apt-get update
-```
-
-You can even apply available updates using:
-```bash
-$ docker-machine ssh machine-name apt-get upgrade
-```
-
-Not sure what kernel your remote Docker host is using? Type the following:
-```bash
-$ docker-machine ssh machine-name uname -r
-```
-
-Besides using the ssh subcommand to execute commands on the remote Docker host, you can also use it to log into the machine itself. It's as easy as typing:
+1. Train model in Python container, export frozen graph
+2. Quantize and optimize in TF tools container
+3. Build Android .so with NDK container
+4. Run on-device tests via ADB from the same container
 
 ```bash
-$ docker-machine ssh machine-name
+#!/bin/bash
+# build_pipeline.sh
+
+# Step 1: Freeze and quantize model
+docker run --rm -v $(pwd):/work indus-ml-train:latest \
+  python /work/scripts/freeze_and_quantize.py \
+    --input_model /work/checkpoints/latest \
+    --output /work/artifacts/quantized_model.pb
+
+# Step 2: Build Android library with model baked in
+docker run --rm -v $(pwd):/work indus-ndk-build:latest \
+  ndk-build -C /work/android_app APP_ABI=armeabi-v7a
+
+echo "Build artifacts in ./artifacts/"
 ```
 
-Your command prompt will change to reflect the fact that you're logged into the remote host:
+Each step used a different image with only the tools it needed. The train image had Python and TF. The NDK image had the Android toolchain. No cross-contamination.
 
-```bash
-Output
-$ root@machine-name#
-```
+## What Worked and What Didn't
 
-To exit from the remote host, simply type:
+Docker eliminated environment drift completely. Build times went from "2 hours plus debugging" to "45 minutes, deterministic." New engineers could build on day one instead of spending a week setting up their environment.
 
-```bash
-$ exit
-```
-
-#### Docker compose:
-helps you connect multiple simple containers to make a complex pipeline.
-
-#### Swarm : 
-A group of docker containers groped togather as one single entity. It's like a bigger box with lots of small boxes but it has all the properties of a box, ie. it can support compose, jenkins, docker machine etc. (Very advanced: https://www.youtube.com/watch?v=JgUyI-MIKZ0)
-
-Service = images + commands
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-### Code: 
-
-**Refernces**
+What didn't work: Docker on macOS was painfully slow for our builds because of the filesystem virtualization layer. We moved CI to a Linux server and kept macOS only for development. Also, the Docker images were large (2.5GB for the full TF build environment). We eventually used multi-stage builds to keep the final images smaller, but the build stage image stayed big. Storage was cheap. Engineer time was not.

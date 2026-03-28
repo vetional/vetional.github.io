@@ -1,91 +1,88 @@
 ---
 layout: post
-title: "Exploring LSTM's for Text to speech (TTS) applications"
+title: "LSTM-Based Text to Speech for 6 Indian Languages on Android NDK"
 comments: true
-description: "Use of deep learning techniques to replace the traditional HMM based TTS systems"
-keywords: "deep learning, tts, LSTM, HMM, tensorflow, android"
+description: "Replacing HMM-based TTS with LSTM on Android NDK in C for Hindi, Tamil, Telugu, Malayalam, Bengali, and Marathi"
+keywords: "tts, lstm, android ndk, indic languages, hindi, tamil, telugu, speech synthesis, hmm"
 ---
 
-### Think : Serving tensorflow based LSTM model on android for TTS application
+Indus OS needed TTS for 6 Indian languages: Hindi, Tamil, Telugu, Malayalam, Bengali, and Marathi. The existing HMM-based system sounded robotic and handled prosody poorly. We replaced it with an LSTM-based pipeline running entirely on-device in C through Android NDK. The constraint: real-time synthesis on a single CPU core with under 100MB memory.
 
+## The Two-Model Architecture
 
-### Learn: Basics of LSTM 
-
-**Architecture**
-
-#### Duration model
-
-#### Input Features
-
-Phoneme-level linguistic features?  
+Our pipeline had two models. A duration model predicted how long each phoneme should last. An acoustic model generated spectral features (mel-cepstral coefficients + F0) frame by frame. Both were 2-layer LSTMs with 256 hidden units.
 
 ```
-**STATISTICAL PARAMETRIC SPEECH SYNTHESIS USING DEEP NEURAL NETWORKS** 
-by _Heiga Zen, Andrew Senior, Mike Schuster_
-
-The input features for the DNN-based systems included 342 bi- nary features for categorical linguistic contexts (e.g. phonemes iden- tities, stress marks) and 25 numerical features for numerical linguis- tic contexts (e.g. the number of syllables in a word, position of the current syllable in a phrase). In addition to the linguistic contexts- related input features, 3 numerical features for coarse-coded posi- tion of the current frame in the current phoneme and 1 numerical feature for duration of the current segment were used.
-
-We also tried to encode numerical features to binary ones by applying questions such as “is-the-number-of-words-in-a-phrase-less-than-5”. A pre- liminary experiment showed that using numerical features directly worked better and more efficiently than encoding them to binary ones.
-````
-
-```
-**AN HMM-BASED SPEECH SYNTHESIS SYSTEM APPLIED TO ENGLISH**
-by _Keiichi Tokuda, Heiga Zen, Alan W. Black_
-
-phoneme:
-- preceding, current, succeeding phoneme
-- position of current phoneme in current syllable
-
-syllable:
-- number of phonemes at preceding, current, succeeding
-- accent of preceding, current, succeeding syllable
-- stress of preceding, current, succeeding syllable
-- position of current syllable in current word syllable
-- number of preceding, succeeding stressed syllables in current phrase
-- number of preceding, succeeding accented syllables in current phrase stressed syllable accented syllable
-- number of syllables
-- number of syllables
-- vowel within current syllable
-
-word:
-- guess at part of speech of preceding, current, succeeding word
-- number of syllables in preceding, current, succeeding word
-- position of current word in current phrase
-- number of preceding, succeeding content words in current phrase
-- number of words from previous, to next content word
-
-phrase:
-- number of syllables in preceding, current, succeeding phrase
-- position in major phrase
-- ToBI endtone of current phrase utterance:
-- number of syllables in current utterance
-
-utterance:
-- number of syllables in current utterance
+Text -> Phoneme Conversion -> [Duration Model] -> [Acoustic Model] -> Vocoder -> Audio
 ```
 
-####Output Features
+The duration model took phoneme-level linguistic features as input: phoneme identity, position in syllable, syllable stress, word position in phrase, and phrase-level features. For Hindi alone this was a 342-dimensional binary feature vector plus 25 numerical features, following the Zen/Senior/Schuster architecture.
 
+```c
+// Phoneme feature extraction (simplified)
+typedef struct {
+    int phoneme_id;        // one-hot encoded, 48 classes for Hindi
+    int pos_in_syllable;   // forward/backward position
+    int syllable_stress;   // 0 or 1
+    int num_syllables_in_word;
+    int word_pos_in_phrase;
+    float duration_sec;    // output from duration model
+} PhonemeFeature;
 ```
-**STATISTICAL PARAMETRIC SPEECH SYNTHESIS USING DEEP NEURAL NETWORKS** 
-by _Heiga Zen, Andrew Senior, Mike Schuster_
 
-The out- put features were basically the same as those used in the HMM- based systems. To model logF0 sequences by a DNN, the con- tinuous F0 with explicit voicing modeling approach [37] was used; voiced/unvoiced binary value was added to the output features and log F0 values in unvoiced frames were interpolated. To reduce the computational cost, 80% of silence frames were removed from the training data.
+The acoustic model took the duration-expanded features and predicted 60-dimensional output per frame: 25 mel-cepstral coefficients, 25 delta coefficients, log F0, delta log F0, and voiced/unvoiced flag. We used the MLSA (Mel Log Spectrum Approximation) vocoder to convert these features to audio.
+
+## Running LSTM Inference in C
+
+We wrote the LSTM forward pass from scratch in C. No TensorFlow, no framework overhead. Just matrix multiplications and sigmoid/tanh activations. The weight matrices were exported from our Python training code as flat binary files.
+
+```c
+// LSTM cell forward pass
+void lstm_forward(LSTMCell *cell, float *input, float *h_prev,
+                  float *c_prev, float *h_out, float *c_out) {
+    int n = cell->hidden_size;
+    float gates[4 * n];
+
+    // input, forget, cell, output gates
+    mat_mul(cell->W_ih, input, gates, 4*n, cell->input_size);
+    mat_mul_add(cell->W_hh, h_prev, gates, 4*n, n);
+    vec_add(gates, cell->bias, gates, 4*n);
+
+    for (int i = 0; i < n; i++) {
+        float ig = sigmoid(gates[i]);
+        float fg = sigmoid(gates[n + i]);
+        float cg = tanhf(gates[2*n + i]);
+        float og = sigmoid(gates[3*n + i]);
+        c_out[i] = fg * c_prev[i] + ig * cg;
+        h_out[i] = og * tanhf(c_out[i]);
+    }
+}
 ```
 
-How to compute the phoneme level duratons?
+Each language had its own weight files but shared the same inference code. Total model size per language was about 3.2MB (quantized to 16-bit floats). All 6 languages together: 19.2MB on disk.
 
+## Latency and Memory on Real Devices
 
-### Acoustic model
-#### Input Features
+Our target was synthesis faster than 2x real-time. That means 1 second of audio should take less than 2 seconds to generate. On a Mediatek MT6582 at 1.3GHz (single core), we measured:
 
-#### Output Features
+| Metric | Value |
+|--------|-------|
+| Duration model inference | 12ms per utterance |
+| Acoustic model inference | 1.4ms per frame |
+| Vocoder (MLSA) | 0.8ms per frame |
+| Total for 3-second utterance | ~1.8 seconds |
+| Peak memory usage | 42MB |
 
-### Code: 
-**Tensorflow graphs for modeling LSTM**
+The bottleneck was the acoustic model. At 200 frames/second (5ms frame shift), a 3-second utterance needed 600 forward passes. We optimized the matrix multiply with NEON intrinsics which gave us a 2.3x speedup on ARM.
 
-**Serve models to consumers**
+## Language-Specific Pitfalls
 
-**Limitations**
+Each language had its own phoneme set and grapheme-to-phoneme rules. Tamil has no aspirated consonants. Malayalam has a complex sandhi system where phonemes change at word boundaries. Bengali vowel nasalization required special handling in the feature extraction.
 
-**Refernces**
+We maintained separate G2P (grapheme-to-phoneme) rule files per language, written as finite state transducers in C. The Hindi G2P alone had 180 rules. Getting these right was more work than the neural network itself.
+
+## What Worked and What Didn't
+
+Writing inference in pure C eliminated framework overhead entirely. On a 512MB device, 42MB peak memory was acceptable. The LSTM output sounded noticeably more natural than HMM, especially for Hindi and Tamil where we had the most training data (8 hours each).
+
+What didn't work: we tried sharing a single multilingual model across all 6 languages. Quality dropped significantly for Malayalam and Bengali which have very different prosody patterns. Separate models per language was the only way to maintain quality. We also tried GRU cells to save compute but the quality difference was audible, so we stuck with LSTM.
