@@ -6,6 +6,16 @@ description: "12 interactive animations explaining caching, parallelism, and qua
 keywords: "diffusion models vllm gpu parallelism quantization caching teacache dbcache taylorseer"
 ---
 
+## How expensive is generating one image?
+
+A 20B parameter diffusion model (like Qwen-Image) generating a single 1024×1024 image with 50 steps and classifier-free guidance requires roughly **17,200 TFLOPs** of compute.
+
+For comparison, rendering one frame of Call of Duty at 4K with ray tracing takes about **2.8 TFLOPs**. That means generating a single image costs as much compute as rendering **~6,000 frames of Call of Duty**, or about 2 minutes of gameplay at 60fps.
+
+This is why diffusion acceleration matters. The techniques below can cut that cost by 6-24×.
+
+---
+
 A set of **12 interactive animated explainers** (samwho.dev-style) covering all the diffusion acceleration techniques from vLLM-Omni. Each concept gets its own PIXI.js + GSAP animation with play/pause/replay controls.
 
 ### Caching (5 animations)
