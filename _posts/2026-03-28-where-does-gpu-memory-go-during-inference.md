@@ -68,7 +68,7 @@ CUDA context, PyTorch allocator, memory fragmentation. The "where did my last gi
 | Overhead | ~0.5 GB | ~0.5 GB | Fixed |
 | **Total** | **~13 GB** ✅ | **~26.5 GB** ❌ | |
 
-<div class="anim-scroll"><div class="anim-scroll"><div class="anim-embed" style="height:700px"><diffusion-accel scene="gpu-memory"></diffusion-accel></div></div>
+<div class="anim-scroll"><div class="anim-embed" style="height:700px"><diffusion-accel scene="gpu-memory"></diffusion-accel></div></div>
 
 ## Bandwidth: Why FP8 Helps Speed, Not Just Size
 
