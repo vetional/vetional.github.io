@@ -85,8 +85,10 @@
         padding: 12px 0;
       }
       nav h2 { padding: 0 16px; font-size: 0.85rem; margin-bottom: 8px; }
-      .section-title { display: inline; margin-right: 8px; }
-      nav a { display: inline; padding: 4px 8px; font-size: 0.75rem; }
+      .section-title { display: block; margin: 8px 16px 4px; font-size: 0.75rem; }
+      nav a { display: inline-block; padding: 3px 8px; font-size: 0.72rem; }
+      .nav-back { display: block; padding: 6px 16px 8px; font-size: 0.72rem; border-bottom: 1px solid #ECF0F1; margin-bottom: 4px; }
+      .nav-back a { margin-right: 12px; }
       main {
         padding: 16px;
         margin-left: 0 !important;
@@ -115,6 +117,7 @@
   <nav>
     <h2>⚡ Diffusion Accel</h2>
     <div class="section-title">Caching</div>
+    <div class="nav-back"><a href="/learning-animations/">All Animations</a><a href="/">Blog</a></div>
     <a href="#why-cache">Why Cache?</a>
     <a href="#teacache">TeaCache</a>
     <a href="#dbcache">DBCache</a>
