@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Step Distillation vs Guidance Distillation: Making Diffusion Inference 6-24× Faster"
+title: "Step Distillation vs Guidance Distillation: Making Diffusion Inference Up to 24× Faster"
 comments: true
 description: "When you can't afford 50 transformer passes per image. A practical guide to choosing between step distillation (6-12x) and guidance distillation (2x), no special dataset needed."
 keywords: "diffusion models distillation progressive distillation guidance distillation classifier-free guidance CFG inference optimization latency"
