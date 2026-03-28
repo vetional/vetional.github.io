@@ -16,6 +16,19 @@ A technical blog by [Prateek Shrivastava](https://vetional.github.io/about/) —
 
 Diffusion models · GPU memory optimization · FP8/Int8 quantization · Inference acceleration · ML infrastructure · Indic language TTS
 
+## Upcoming Posts
+
+1. The GPS Analogy: Why Diffusion Models Cache
+2. Why Generating a 4K Image Costs 16× More Than 1K
+3. CFG Explained: Why Your Diffusion Model Runs the Transformer Twice
+4. Where Does GPU Memory Actually Go During Inference?
+5. FP8 Quantization: Why Rounding 14 Billion Numbers Still Works
+6. Ring Attention vs Ulysses: When to Use Which
+7. Building samwho.dev-Style Animations with PIXI.js + GSAP
+8. Visualizing P90 Latency: Why It's Not Additive
+9. The 3 Types of Diffusion Acceleration: Cache, Parallelize, Quantize
+10. Building TTS for 6 Indian Languages on Android NDK
+
 ## Built With
 
 Jekyll · PIXI.js · GSAP · Fira Code
