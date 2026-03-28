@@ -1,14 +1,16 @@
 ---
 layout: post
-title: "Step Distillation vs Guidance Distillation: Two Ways to Make Diffusion 2× Faster"
+title: "Step Distillation vs Guidance Distillation: Making Diffusion Inference 6-24× Faster"
 comments: true
-description: "When you can't afford 50 transformer passes per image. A practical guide to choosing between step distillation and guidance distillation."
+description: "When you can't afford 50 transformer passes per image. A practical guide to choosing between step distillation (6-12x) and guidance distillation (2x), no special dataset needed."
 keywords: "diffusion models distillation progressive distillation guidance distillation classifier-free guidance CFG inference optimization latency"
 ---
 
 {% include animations.html %}
 
 Diffusion models run the transformer **50-100 times** per image. Two distillation techniques cut this down, but they work differently, cost differently to train, and break differently. Here's how to choose.
+
+Neither technique requires a special dataset. The teacher model generates the training signal. You can use the original training data, or even random noise as input.
 
 *For background on where GPU memory goes during inference, see [Where Does GPU Memory Actually Go?](/2026/where-does-gpu-memory-go-during-inference/)*
 
