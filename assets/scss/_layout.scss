@@ -261,8 +261,39 @@ hr {
   margin-top: $base-spacing * 2;
 }
 
-// This applies from 0px to 600px
+// Mobile responsive
 @media (max-width: 600px) {
+  .container {
+    padding: 12px;
+  }
+
+  .logo {
+    float: none;
+    text-align: center;
+    font-size: 18px;
+    margin-bottom: 8px;
+  }
+
+  .nav {
+    min-height: auto;
+  }
+
+  .navbar {
+    float: none;
+    text-align: center;
+    margin-bottom: 8px;
+
+    li {
+      padding: 0 0.4em;
+      font-size: 14px;
+    }
+  }
+
+  .intro {
+    .lead { font-size: 14px; }
+    blockquote { font-size: 13px; margin: 12px 0; padding-left: 12px; }
+  }
+
   .date-label {
     float: left !important;
     border: 0;
@@ -275,14 +306,24 @@ hr {
     border: 1px solid lighten($light-gray-color, 10%);
     padding: 0 0.5em;
     background: lighten($light-gray-color, 15%);
+    .article-title { width: 100%; }
   }
 
   .post-link {
-    &:hover,
-    &:focus,
-    &:active {
+    &:hover, &:focus, &:active {
       border-bottom: 2px solid transparent;
       color: $blue-color;
     }
   }
+
+  .post, .page {
+    font-size: 14px;
+    h2 { font-size: 1.3em; }
+    h3 { font-size: 1.15em; }
+    pre, code { font-size: 12px; overflow-x: auto; }
+    table { font-size: 12px; display: block; overflow-x: auto; }
+    img { max-width: 100%; height: auto; }
+  }
+
+  .anim-embed { height: 400px !important; }
 }
