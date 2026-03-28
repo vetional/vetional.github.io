@@ -12,6 +12,8 @@ Diffusion models run the transformer **50-100 times** per image. Two distillatio
 
 Neither technique requires a special dataset. The teacher model generates the training signal. You can use the original training data, or even random noise as input.
 
+A good example is [FLUX.2 klein 4B](https://huggingface.co/black-forest-labs/FLUX.2-klein-4B) from Black Forest Labs. It is a 4B parameter rectified flow transformer that already ships as a distilled model: 4 inference steps, sub-second generation, ~13GB VRAM. It uses both step distillation (reduced from 50 to 4 steps) and guidance-free generation (trained with guidance scale 1.0, so no CFG overhead at all). This is what the end result of applying both techniques looks like in practice.
+
 *For background on where GPU memory goes during inference, see [Where Does GPU Memory Actually Go?](/2026/where-does-gpu-memory-go-during-inference/)*
 
 ## Step Distillation: Fewer Steps
