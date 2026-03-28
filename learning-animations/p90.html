@@ -28,8 +28,8 @@
       margin-bottom: 24px;
     }
     p90-explainer {
-      width: 900px;
-      height: 560px;
+      width: 100%; max-width: 900px;
+      height: 560px; min-width: 500px;
       border: 1px solid #ECF0F1;
       border-radius: 12px;
       background: #fff;
@@ -42,7 +42,7 @@
     }
   
     @media (max-width: 600px) {
-      body { min-width: 900px; }
+      body { min-width: 100%; max-width: 900px; }
       body { padding: 20px 12px; }
       h1 { font-size: 1.2rem; }
       p { font-size: 0.85rem; line-height: 1.5; }
