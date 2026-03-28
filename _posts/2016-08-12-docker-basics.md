@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "(Incomplete) Docker basics"
+title: "Docker basics"
 comments: true
 description: "Learn docker"
 keywords: "docker"

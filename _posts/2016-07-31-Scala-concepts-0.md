@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "(Incomplete) Scala classes the functional way"
+title: "Scala classes the functional way"
 comments: true
 description: "Learn scala with Martin Odersky Coursera (July-August 2016)"
 keywords: "scala, class, object, sets,"

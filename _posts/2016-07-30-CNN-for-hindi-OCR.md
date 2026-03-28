@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "(Incomplete) Developing OCR for indic languages using CNN"
+title: "Developing OCR for indic languages using CNN"
 comments: true
 description: "Use of deep learning techniques to recognize printed characters in indic languages"
 keywords: "deep learning, OCR, Convolutional Neural network CNN, tensorflow, android"

@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "(Incomplete) Port physics based animations to KIWI"
+title: "Port physics based animations to KIWI"
 comments: true
 description: "Python implementation of PBA on KIWI"
 keywords: "python, kiwi, opengl, game, thesis"

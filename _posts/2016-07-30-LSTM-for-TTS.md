@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "(Incomplete) Exploring LSTM's for Text to speech (TTS) applications"
+title: "Exploring LSTM's for Text to speech (TTS) applications"
 comments: true
 description: "Use of deep learning techniques to replace the traditional HMM based TTS systems"
 keywords: "deep learning, tts, LSTM, HMM, tensorflow, android"

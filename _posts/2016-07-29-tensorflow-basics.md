@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "(Incomplete) Tensorflow basics"
+title: "Tensorflow basics"
 comments: true
 description: "Graphs, distributed computations, protobuf and tensorflow serving"
 keywords: "basics of tensorflow, serving, distributed"
