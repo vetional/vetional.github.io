@@ -1,7 +1,10 @@
 <section class="intro">
   <div class="container">
-    <p class="lead">Hi, I'm <strong  itemprop="name">{{ site.author.name }}</strong>, a <em itemprop="jobTitle">{{ site.author.job }}</em>. <br>
-    <br>
-    <p class="code">{{ site.author.bio }} </p>  -- <a href="{{ '/about' | prepend: site.author.url }}" target="_blank">about me</a></p>
+    <p class="lead">Hi, I'm <strong itemprop="name">{{ site.author.name }}</strong>, a <em itemprop="jobTitle">{{ site.author.job }}</em>.</p>
+    <blockquote style="border-left: 3px solid #2ecc71; padding-left: 16px; margin: 20px 0; font-style: italic; color: #7f8c8d;">
+      "Before someone builds a super-bad robot, someone has to build a mildly bad robot, and before that a not-so-bad robot."
+      <br><small>— Rodney A. Brooks</small>
+    </blockquote>
+    <p>The road to creating AI is the most fascinating journey of our generation. Here I write about diffusion models, GPU systems, and ML infrastructure. <a href="{{ '/about' | prepend: site.baseurl }}">More about me →</a></p>
   </div>
 </section>
