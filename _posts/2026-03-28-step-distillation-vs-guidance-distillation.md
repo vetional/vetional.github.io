@@ -2,122 +2,86 @@
 layout: post
 title: "Step Distillation vs Guidance Distillation: Two Ways to Make Diffusion 2× Faster"
 comments: true
-description: "A visual comparison of two distillation techniques that speed up diffusion model inference — one reduces the number of steps, the other makes each step cheaper."
-keywords: "diffusion models distillation progressive distillation guidance distillation classifier-free guidance CFG inference optimization"
+description: "When you can't afford 50 transformer passes per image — a practical guide to choosing between step distillation and guidance distillation."
+keywords: "diffusion models distillation progressive distillation guidance distillation classifier-free guidance CFG inference optimization latency"
 ---
 
-Diffusion models generate images by running a transformer **50 times** — once per denoising step. Each step predicts a direction to remove noise, then moves the image slightly in that direction. The result is stunning quality, but painfully slow inference.
+You've got a diffusion model that generates beautiful images. There's just one problem: it takes **50 transformer passes** to produce a single image. On your hardware, that's seconds — not milliseconds. Your users won't wait, and your GPU bill is already too high.
 
-Two distillation techniques attack this problem from different angles. Understanding when to use which is key to deploying diffusion models efficiently.
+Two distillation techniques can help. They attack the problem from different angles, and choosing the wrong one wastes your limited training budget. Here's how to decide.
 
-## The Problem: Why Diffusion Is Slow
+## Why It's So Expensive
 
-At each denoising step, two things happen:
+Each denoising step runs the full transformer (24+ layers, billions of FLOPs) to predict a direction, then takes a tiny step in that direction. Cheap math, expensive prediction.
 
-1. **The transformer predicts a direction** — "which way should I move to remove noise?" This is expensive: 24+ layers, billions of FLOPs.
-2. **The scheduler moves the image** — apply the predicted direction to take one small step. This is cheap: simple math.
+If you're using classifier-free guidance (CFG) — and you almost certainly are, since it's what makes prompts actually work — the transformer runs **twice per step**: once with the prompt, once without. The difference between the two outputs is what makes images vivid instead of bland.
 
-The cost is dominated by the transformer. And if you're using classifier-free guidance (CFG), the transformer runs **twice per step** — once with the prompt, once without — doubling the cost.
+**50 steps × 2 passes = 100 transformer passes per image.**
 
-**50 steps × 1-2 transformer passes per step = 50-100 transformer passes per image.**
-
-Both distillation techniques reduce this number, but in fundamentally different ways.
+On a single GPU, that's the difference between serving 10 users and serving 100.
 
 <a href="https://vetional.github.io/learning-animations/diffusion-accel.html" style="display:inline-block;padding:8px 16px;background:#4a90d9;color:#fff;border-radius:4px;text-decoration:none;font-size:0.9em;">▶ See the interactive "Why Cache?" animation</a>
 
-## Step Distillation: Fewer Steps
+## Option 1: Step Distillation — Cut the Number of Steps
 
-**Core idea:** Train a student model to take one step that equals two steps of the teacher.
+**What it does:** Trains a student model where 1 step = 2 teacher steps. Apply repeatedly: 50 → 25 → 12 → 8 → 4.
 
-The teacher model generates images in 50 steps. We clone it as a student, then train the student so that its single prediction matches the result of two consecutive teacher predictions. After training, the student needs only 25 steps for the same quality.
+**Why you'd pick this:** You need the biggest possible speedup. Going from 50 steps to 8 gives you a **6× speedup** with barely noticeable quality loss. Push to 4 steps for **12×** if you can tolerate slight softness in fine details.
 
-The clever part: this process is **progressive**. We can repeat it — distilling the 25-step student into a 12-step student, then into 8, then 4, then 2, then 1. Each round halves the step count.
+**The cost:** Each halving round requires a training run. You need the original teacher model's weights, a training dataset, and GPU hours for distillation. For a large model, each round might take days on a multi-GPU setup. But you only pay this cost once — the distilled model serves forever.
 
-### How It Works
+**The catch at low step counts:** Below 4 steps, quality drops noticeably. The model is trying to do in one shot what originally took 50 careful corrections. Faces get soft, textures lose crispness. At 1 step, you'll likely need an adversarial loss (like SDXL Turbo uses) to recover sharpness — which adds training complexity and can reduce output diversity.
 
-1. Start with a trained teacher model (50 steps)
-2. Clone it as a student
-3. For each training example:
-   - Run the teacher for 2 steps from a noisy image
-   - Train the student to match that result in 1 step
-4. The student now needs 25 steps
-5. Repeat: the 25-step model becomes the new teacher
-
-This is called **progressive distillation**, introduced by Salimans & Ho (2022). The key insight is that each round only requires matching 2 steps, not the entire 50-step trajectory — making it computationally tractable.
-
-### The Tradeoff
-
-Each halving introduces a small quality loss. Going from 50 to 8 steps is nearly lossless. Going to 4 steps shows minor degradation. Going to 1 step produces noticeably blurrier results — the model is trying to do in one shot what originally took 50 careful steps.
-
-The sweet spot for most applications is **4-8 steps**: a 6-12× speedup with minimal quality loss.
+**Sweet spot for resource-constrained deployment: 4-8 steps.** This is where you get the most speedup per unit of quality loss.
 
 <a href="https://vetional.github.io/learning-animations/distillation.html" style="display:inline-block;padding:8px 16px;background:#4a90d9;color:#fff;border-radius:4px;text-decoration:none;font-size:0.9em;">▶ See the interactive Step Distillation animation</a>
 
-## Guidance Distillation: Cheaper Steps
+## Option 2: Guidance Distillation — Make Each Step Cheaper
 
-**Core idea:** Train a student model to produce the guided output in one forward pass instead of two.
+**What it does:** Trains a student to produce the guided output (the result of the 2-pass CFG subtraction) in a single forward pass.
 
-Classifier-free guidance (CFG) is what makes prompt-following work. At each step, the model runs twice:
+**Why you'd pick this:** You want a **safe, predictable 2× speedup** without touching the step count. Quality stays almost identical because you're not skipping any steps — you're just making each one half as expensive. If your latency budget is tight but not desperate, this is the lower-risk option.
 
-1. **With the prompt** → produces a vague, safe image
-2. **Without the prompt** → produces generic noise removal
+**The cost:** One training run, typically shorter than step distillation since the task is simpler (matching one combined output, not collapsing two sequential steps). The student is conditioned on the guidance scale, so you can still tune prompt strength at inference time.
 
-The difference between these two outputs isolates what the prompt contributes. Amplifying that difference (typically 7×) produces vivid, prompt-faithful images.
+**The catch:** Only helps if you're using CFG. If you're not (rare for text-to-image, but possible for unconditional generation), this technique doesn't apply. Also, reducing steps later will weaken the guidance effect — so if you plan to combine with step distillation, do guidance distillation **first**.
 
-The problem: both passes take the **current noisy image** as input, so neither can be precomputed. Every step costs 2× the compute.
-
-### How It Works
-
-Guidance distillation trains a student to directly predict the guided output — the result of the subtraction and amplification — in a single forward pass:
-
-1. Run the teacher with CFG (2 passes) to get the guided prediction
-2. Train the student to match that guided prediction in 1 pass
-3. The student is conditioned on the guidance scale, so it can produce different strengths of guidance
-
-After distillation, each step costs half as much. The student doesn't need to run the unconditional pass at all — it has internalized the effect of guidance.
-
-### The Tradeoff
-
-Guidance distillation preserves quality well because it doesn't change the number of steps — it just makes each step cheaper. The main risk is that the student may not perfectly capture the guidance effect at all noise levels, leading to subtle differences in prompt adherence.
-
-This technique is especially valuable as a **preprocessing step before step distillation**. Reducing the number of steps weakens the effect of guidance (since guidance relies on repeated small adjustments). Distilling guidance first ensures the effect is preserved when steps are later reduced.
+**Why "first" matters:** CFG works by making small adjustments to the predicted direction at every step. Fewer steps = fewer adjustments = weaker guidance. If you distill guidance into the model before reducing steps, the effect is baked in and survives the step reduction.
 
 <a href="https://vetional.github.io/learning-animations/guidance.html" style="display:inline-block;padding:8px 16px;background:#4a90d9;color:#fff;border-radius:4px;text-decoration:none;font-size:0.9em;">▶ See the interactive Guidance Distillation animation</a>
 
-## Head-to-Head Comparison
+## Decision Guide
+
+**"I need to ship fast with minimal training budget"**
+→ Guidance distillation. One training run, 2× speedup, low risk.
+
+**"I need maximum throughput on limited hardware"**
+→ Step distillation to 4-8 steps. Bigger speedup, but requires more training rounds.
+
+**"I need real-time generation (< 100ms)"**
+→ Both. Guidance distillation first, then step distillation to 4 steps. Combined: up to **24× speedup** (2× from guidance × 12× from steps). You'll also want FP8 quantization for another 1.3× on top.
+
+**"I can't afford any retraining"**
+→ Neither distillation technique works without training. Look at **caching** instead (TeaCache, DBCache) — these skip redundant transformer passes at runtime with zero training cost. Roughly 2× speedup for free.
+
+## Head-to-Head
 
 | | Step Distillation | Guidance Distillation |
 |---|---|---|
-| **What it reduces** | Number of steps (50 → 4-8) | Cost per step (2 passes → 1) |
 | **Speedup** | 6-12× | 2× |
-| **Quality impact** | Slight blur at low step counts | Minimal |
-| **Diversity impact** | Reduced at very low steps | Preserved |
-| **Works without CFG?** | Yes | No (only relevant with CFG) |
-| **Can be combined?** | Yes — apply guidance distillation first, then step distillation |
+| **Training cost** | Multiple rounds | Single round |
+| **Quality risk** | Noticeable below 4 steps | Minimal |
+| **Works without CFG?** | Yes | No |
+| **Combine with other?** | Yes (apply after guidance distillation) | Yes (apply before step distillation) |
+| **Best for** | Max throughput | Safe, predictable speedup |
 
-## When to Use Which
+## The Third Option: Caching (No Training Required)
 
-**Use step distillation when:**
-- You need maximum speedup (4-12×)
-- You can tolerate minor quality loss
-- You're deploying to latency-sensitive applications (real-time generation)
+If retraining isn't an option, caching techniques skip transformer passes at runtime by detecting when consecutive steps produce nearly identical outputs. The transformer predicts almost the same direction at step 45 and step 46 — so why recompute it?
 
-**Use guidance distillation when:**
-- You use classifier-free guidance (most text-to-image models do)
-- You want a safe 2× speedup with minimal quality risk
-- You plan to also apply step distillation afterward
+Techniques like TeaCache measure the L1 distance between consecutive outputs and reuse the cached result when the difference is below a threshold. DBCache goes further: run only the first 2 transformer layers to decide whether to cache the remaining 22. TaylorSeer predicts the next output from the trend using Taylor expansion — zero GPU cost.
 
-**Use both together when:**
-- You want the best of both worlds
-- Apply guidance distillation first (preserves guidance effect)
-- Then apply step distillation (reduces steps)
-- Combined speedup: up to 24× (2× from guidance × 12× from steps)
-
-## Beyond Distillation: Caching
-
-There's a third approach that doesn't require any retraining: **caching**. Instead of distilling a new model, caching techniques like TeaCache, DBCache, and TaylorSeer skip transformer passes at runtime by reusing previous outputs when consecutive steps produce nearly identical results.
-
-Caching is orthogonal to distillation — you can combine all three approaches for maximum speedup.
+These are orthogonal to distillation. You can stack all three: guidance distillation + step distillation + caching.
 
 <a href="https://vetional.github.io/learning-animations/diffusion-accel.html" style="display:inline-block;padding:8px 16px;background:#2ecc71;color:#fff;border-radius:4px;text-decoration:none;font-size:0.9em;">▶ Explore all 12 Diffusion Acceleration animations</a>
 
