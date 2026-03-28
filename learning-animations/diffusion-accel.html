@@ -59,9 +59,7 @@
     .anim-section h2 { font-size: 1.15rem; margin-bottom: 8px; }
     .anim-section .desc { color: #95A5A6; font-size: 0.8rem; margin-bottom: 14px; }
     .anim-container {
-      max-width: 100%;
       overflow: hidden;
-      width: 100%;
       height: 620px;
       border: 1px solid #ECF0F1;
       border-radius: 10px;
@@ -70,7 +68,6 @@
     }
     diffusion-accel {
       display: block;
-      width: 100%;
       height: 100%;
     }
     .hint { margin-top: 6px; color: #BDC3C7; font-size: 0.68rem; }
@@ -80,6 +77,7 @@
       nav {
         width: 100% !important;
         min-width: 0 !important;
+        position: static;
         height: auto;
         position: relative;
         border-right: none;
@@ -91,17 +89,14 @@
       nav a { display: inline; padding: 4px 8px; font-size: 0.75rem; }
       main {
         padding: 16px;
-        max-width: 100%;
-        margin-left: 0 !important;
-        width: 100%;
-      }
+          margin-left: 0 !important;
+        }
       h1 { font-size: 1.3rem; }
       .subtitle { font-size: 0.78rem; margin-bottom: 16px; }
       .anim-section { margin-bottom: 30px; }
       .anim-section h2 { font-size: 1rem; }
       .anim-section .desc { font-size: 0.75rem; }
       .anim-container {
-      max-width: 100%;
       overflow: hidden; height: 480px; }
       .hint { font-size: 0.65rem; }
       diffusion-accel { display: block; width: 100%; height: 100%; }
