@@ -91,7 +91,7 @@ These are orthogonal to distillation. You can stack all three: guidance distilla
 
 Where does all the GPU memory go, and which technique helps where?
 
-<div class="anim-embed"><diffusion-accel scene="gpu-memory"></diffusion-accel></div>
+<div class="anim-embed" style="height:700px"><diffusion-accel scene="gpu-memory"></diffusion-accel></div>
 
 No single technique solves everything. The practical recipe: quantize weights (FP8) + distill guidance + reduce steps + cache at runtime.
 
