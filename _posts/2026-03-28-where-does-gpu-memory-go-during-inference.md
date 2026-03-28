@@ -43,11 +43,11 @@ Intermediate tensors from every transformer layer. At 1024×1024 (sequence lengt
 
 **Why quadratic:** double the resolution → 4× the tokens → 4× the activations.
 
-### 3. KV Cache (~1-6 GB), The Hidden Hog
+### 3. Attention Intermediates (~1-6 GB), The Hidden Hog
 
-Every attention layer stores Key and Value tensors for the current sequence. Modest at 1024×1024, but at 2048×2048 it can hit 6+ GB.
+At each step, every attention layer computes Q, K, V matrices and attention scores over the full sequence. Unlike LLMs, diffusion transformers do not cache K/V across steps. They recompute everything each step. But within a single forward pass, these intermediate tensors must all live in memory simultaneously. At 2048×2048 (sequence length ~16K), this can hit 6+ GB.
 
-**This is why high-res OOMs.** Weights don't change with resolution. KV cache does, quadratically.
+**This is why high-res OOMs.** Weights don't change with resolution. Attention intermediates do, quadratically.
 
 ### 4. VAE Decode (~1-4 GB), The Final Spike
 
@@ -63,7 +63,7 @@ CUDA context, PyTorch allocator, memory fragmentation. The "where did my last gi
 |-----------|-----------|-----------|----------------|
 | Weights | ~8 GB | ~8 GB | Parameter count (fixed) |
 | Activations | ~2 GB | ~8 GB | Resolution² × batch |
-| KV Cache | ~1.5 GB | ~6 GB | Resolution² × layers |
+| Attention intermediates | ~1.5 GB | ~6 GB | Resolution² × layers |
 | VAE Decode | ~1 GB | ~4 GB | Output resolution |
 | Overhead | ~0.5 GB | ~0.5 GB | Fixed |
 | **Total** | **~13 GB** ✅ | **~26.5 GB** ❌ | |

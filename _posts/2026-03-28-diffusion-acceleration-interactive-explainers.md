@@ -42,7 +42,7 @@ Every weight in a 20B model takes 2 bytes in BF16. That is 40GB just for weights
 
 Why does rounding work? Most weight values cluster near zero. Eight bits captures the important range. The rare outliers get rounded with minimal accuracy loss. Some layers (especially attention) are more sensitive, so per-layer control lets you quantize what is safe and keep sensitive layers in BF16.
 
-After FP8: **~13,800 TFLOPs per image (~4,900 CoD frames, ~82s of gameplay).**
+Applied alone, FP8 brings the cost to **~13,400 TFLOPs per image.** Combined with other techniques, the savings compound.
 
 ## Combining everything
 
